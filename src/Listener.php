@@ -12,7 +12,7 @@ class Listener
     {
         $token = Config::getTelegramToken();
         if (!$token) {
-            echo 'LOG: No Telegram token specified!';
+            echo 'LOG: No Telegram token is specified!';
             return;
         }
 
@@ -29,40 +29,45 @@ class Listener
         return $this;
     }
 
-    public function getMe()
-    {
-        if ($this->getTelegram()) {
-            $user = $this->getTelegram()->getMe();
-            
-            if ($user) {
-                echo $user->getFirstName();
-            }
-            else {
-                echo 'LOG: Cannot call method getFirstName User entity is empty!';
-            }
-        }
-        else {
-            echo 'LOG: Cannot call method getMe until connection created!';
-        }
-    }
-
     public function getUpdates()
     {
         if ($this->getTelegram()) {
             $result = $this->getTelegram()->getWebhookUpdates();
             
             if ($result && isset($result['message'])) {
-                $chat_id = $result['message']['chat']['id'];
                 $text = $result['message']['text'];
+                $chat_id = $result['message']['chat']['id'];
+                $user_name = $result['message']['from']['username'];
+                
+                $keyboard = [['\xE2\x9E\xA1 Помощь']];
+                
+                $answer = '';
+                $reply_markup = null;
 
-                $this->getTelegram()->sendMessage(['chat_id' => $chat_id, 'text' => 'Вы написали: '.$text]);
+                switch ($text) {
+                    case '/start':
+                        $answer = 'Привет, '.$user_name.'! Я SkoobyBot. Как дела?';
+                        $reply_markup = $this->getTelegram()->replyKeyboardMarkup(
+                            ['keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false]
+                        );
+                        break;
+                    case '/help':
+                    case '\xE2\x9E\xA1 Помошь':
+                        $answer = 'Смотри, основные команды — это /start и /help и пока этого достаточно. В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет.';
+                        break;
+                    default:
+                        $answer = 'Я получил твоё сообщение и рассмотрю его :-)';
+                        break;
+                }
+
+                $this->getTelegram()->sendMessage(['chat_id' => $chat_id, 'text' => $answer, 'reply_markup' => $reply_markup]);
             }
             else {
-                echo 'LOG: Cannot read message until request is empty!';
+                echo 'LOG: Cannot read user message!';
             }
         }
         else {
-            echo 'LOG: Cannot call method getWebhookUpdates until connection created!';
+            echo 'LOG: Cannot receive user message until connection is created!';
         }
     }
 }
