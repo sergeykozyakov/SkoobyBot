@@ -1,6 +1,7 @@
 {
     "require": {
         "php":">=5.5.0",
-        "irazasyed/telegram-bot-sdk": "2.2.0"
+        "irazasyed/telegram-bot-sdk": "2.2.0",
+        "katzgrau/klogger": "dev-master"
     }
 }
