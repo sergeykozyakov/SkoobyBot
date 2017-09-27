@@ -4,19 +4,21 @@ namespace SkoobyBot;
 use SkoobyBot\Config;
 use Telegram\Bot\Api;
 use Katzgrau\KLogger\Logger;
+use Psr\Log\LogLevel;
 
 class Listener
 {
     protected $logger = null;
-    protected $telegram = null;
+    protected $api = null;
 
     public function __construct()
     {
         try {
-            $logger = new Logger(__DIR__ . '/' . Config::getLogDir());
+            $logDir = Config::getLogDir();
+            $logger = new Logger(__DIR__ . '/' . $logDir, LogLevel::WARNING);
             $this->setLogger($logger);
-        } catch (Exception $e) {
-            echo 'SkoobyBot logger system does not work! App is stopped.';
+        } catch (\Exception $e) {
+            echo 'SkoobyBot Logger system does not work! App is stopped.';
             return;
         }
 
@@ -27,10 +29,10 @@ class Listener
         }
 
         try {
-            $telegram = new Api($token);
-            $this->setTelegram($telegram);
-        } catch (Exception $e) {
-            $this->getLogger()->error('Telegram API connection error!');
+            $api = new Api($token);
+            $this->setApi($api);
+        } catch (\Exception $e) {
+            $this->getLogger()->error('Telegram API connection error! '. $e->getMessage());
             return;
         }
     }
@@ -44,23 +46,23 @@ class Listener
         return $this;
     }
     
-    public function getTelegram() {
-        return $this->telegram;
+    public function getApi() {
+        return $this->api;
     }
 
-    public function setTelegram($telegram) {
-        $this->telegram = $telegram;
+    public function setApi($api) {
+        $this->api = $api;
         return $this;
     }
 
     public function getUpdates()
     {
-        if (!$this->getTelegram()) {
+        if (!$this->getApi()) {
             $this->getLogger()->error('Cannot receive user message until connection is created!');
             return;
         }
         
-        $result = $this->getTelegram()->getWebhookUpdates();
+        $result = $this->getApi()->getWebhookUpdates();
             
         if ($result && isset($result['message'])) {
             $text = $result['message']['text'];
@@ -74,7 +76,7 @@ class Listener
             switch ($text) {
                 case '/start':
                     $answer = 'Привет! Я SkoobyBot. Как дела?';
-                    $reply_markup = $this->getTelegram()->replyKeyboardMarkup(
+                    $reply_markup = $this->getApi()->replyKeyboardMarkup(
                         ['keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false]
                     );
                     break;
@@ -87,10 +89,14 @@ class Listener
                     break;
             }
 
-            $this->getTelegram()->sendMessage(['chat_id' => $chat_id, 'text' => $answer, 'reply_markup' => $reply_markup]);
+            try {
+                $this->getApi()->sendMessage(['chat_id' => $chat_id, 'text' => $answer, 'reply_markup' => $reply_markup]);
+            } catch (\Exception $e) {
+                $this->getLogger()->error('Cannot send bot message via Telegram API! '. $e->getMessage());
+            }
         }
         else {
-            $this->getLogger()->error('Cannot read user message!');
+            $this->getLogger()->warning('Cannot read user message! Perhaps you started this page from browser.');
         }
     }
 }
