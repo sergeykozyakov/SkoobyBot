@@ -65,7 +65,6 @@ class Listener
         if ($result && isset($result['message'])) {
             $text = $result['message']['text'];
             $chat_id = $result['message']['chat']['id'];
-            $user_name = $result['message']['from']['firstname'];
             
             $keyboard = [["\xE2\x9E\xA1 Помощь"]];
             
@@ -74,8 +73,7 @@ class Listener
 
             switch ($text) {
                 case '/start':
-                case "\xE2\x9E\xA1 Старт":
-                    $answer = 'Привет, '.$user_name.'! Я SkoobyBot. Как дела?';
+                    $answer = 'Привет! Я SkoobyBot. Как дела?';
                     $reply_markup = $this->getTelegram()->replyKeyboardMarkup(
                         ['keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false]
                     );
