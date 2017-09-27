@@ -1,2 +1,2 @@
 <?php
-echo 'Skooby Bot works fine!';
+require_once 'src/App.php';

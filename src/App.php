@@ -3,8 +3,8 @@ namespace SkoobyBot;
 
 include('vendor/autoload.php');
 
-require 'Config.php';
-require 'Listener.php';
+require_once 'Config.php';
+require_once 'Listener.php';
 
 use SkoobyBot\Listener;
 
