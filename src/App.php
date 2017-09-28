@@ -1,8 +1,6 @@
 <?php
 namespace SkoobyBot;
 
-include('vendor/autoload.php');
-
 require_once 'Config.php';
 require_once 'Listener.php';
 
@@ -18,21 +16,7 @@ class App
     private static $instance = null;
 
     private function __clone() {}
-
-    private function __construct() {
-        try {
-            $logDir = Config::getLogDir();
-            if (!$logDir) {
-                echo 'SkoobyBot Logger path not found!';
-                return;
-            }
-
-            $logger = new Logger(__DIR__ . '/' . $logDir, LogLevel::WARNING);
-            $this->setLogger($logger);
-        } catch (\Exception $e) {
-            echo 'SkoobyBot Logger system does not work!';
-        }
-    }
+    private function __construct() {}
 
     protected function getLogger() {
         return $this->logger;
@@ -51,12 +35,25 @@ class App
     }
 
     public function start() {
-        if (!$this->getLogger()) return;
+        $logDir = Config::getLogDir();
+        if (!$logDir) {
+            echo '[ERROR] SkoobyBot Logger path not found!';
+            return;
+        }
 
-        $listener = new Listener($this->getLogger());
+        try {
+            $logger = new Logger(__DIR__ . '/' . $logDir, LogLevel::WARNING);
+            $this->setLogger($logger);
+        } catch (\Exception $e) {
+            echo '[ERROR] SkoobyBot Logger system does not work! ' . $e->getMessage();
+            return;
+        }
 
-        if ($listener->getApi()) {
+        try {
+            $listener = new Listener($this->getLogger());
             $listener->getUpdates();
+        } catch (\Exception $e) {
+            echo $e->getMessage();
         }
     }
 }
