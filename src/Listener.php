@@ -172,8 +172,6 @@ class Listener
                                 throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
                             }
                         }
-                        
-                        break;
                     }
                 } catch (VKException $e) {
                     $this->getLogger()->error('VK API connection error! ' . $e->getMessage());
