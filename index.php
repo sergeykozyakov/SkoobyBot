@@ -1,5 +1,5 @@
 <?php
-require_once 'src/App.php';
+include('vendor/autoload.php');
 
 use SkoobyBot\App;
 
