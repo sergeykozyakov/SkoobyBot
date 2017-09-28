@@ -39,7 +39,7 @@ class App
         }
 
         try {
-            $logger = new Logger(__DIR__ . '/' . $logDir, LogLevel::DEBUG);
+            $logger = new Logger(__DIR__ . '/' . $logDir, LogLevel::WARNING);
             $this->setLogger($logger);
         } catch (\Exception $e) {
             echo '[ERROR] SkoobyBot Logger system does not work! ' . $e->getMessage();
