@@ -91,23 +91,20 @@ class Listener
             case "\xE2\x9E\xA1 Последний пост VK":
                 // Начало неформатированного небезопасного кода
                 $vk_token = Config::getVkToken();
-                // проверить наличие токена
-
-                $answer = 'Вот так :-)';
+                // проверить наличие токена, все имена в CamelCase
 
                 try {
-                    $vk = new VK('6198731', 'ReoT7Z9tDWFMtszboXEE');
+                    $vk = new VK('6198731', 'ReoT7Z9tDWFMtszboXEE', $vk_token);
                     $posts = $vk->api('wall.get', array(
                         'owner_id' => '3485547',
-                        'count' => 1,
+                        'count' => 10,
                         'filter' => 'owner',
                         'v' => '5.60',
-                        'lang' => 'ru',
-                        'access_token' => $vk_token
+                        'lang' => 'ru'
                     ));
 
                     if (!$posts || !isset($posts['response']) || !isset($posts['response']['items'])) {
-                        $answer = 'Не могу получить последний пост из VK. Извини. Упал на этапе обработки.' . serialize($posts);
+                        $answer = 'Не могу получить последний пост из VK. Извини. Упал на этапе обработки.';
                         break;
                     }
 
@@ -136,10 +133,9 @@ class Listener
                                         $post_photos[] = array('text' => $attachment_text, 'url' => $attachment_url);
                                         break;
                                     default:
-                                        // подумать об обработке геоданных
+                                        // подумать об обработке видео, ссылок, ...
                                         break;
                                 }
-                                
                             }
                         }
                         
@@ -163,7 +159,7 @@ class Listener
                             }
                         }
                         
-                        //if (!$post_text && count($post_photos) == 0) {
+                        if (!$post_text && count($post_photos) == 0) {
                             try {
                                 $this->getApi()->sendMessage([
                                     'chat_id' => $chat_id,
@@ -175,7 +171,7 @@ class Listener
                                 $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
                                 throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
                             }
-                        //}
+                        }
                         
                         break;
                     }
@@ -190,11 +186,13 @@ class Listener
                 break;
         }
 
-        try {
-            $this->getApi()->sendMessage(['chat_id' => $chat_id, 'text' => $answer, 'reply_markup' => $reply_markup]);
-        } catch (\Exception $e) {
-            $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
-            throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
+        if ($answer) {
+            try {
+                $this->getApi()->sendMessage(['chat_id' => $chat_id, 'text' => $answer, 'reply_markup' => $reply_markup]);
+            } catch (\Exception $e) {
+                $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
+                throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
+            }
         }
     }
 }
