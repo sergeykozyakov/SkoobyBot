@@ -57,13 +57,13 @@ class Listener
         }
 
         $result = $this->getApi()->getWebhookUpdates();
+        $this->getLogger()->warning('Result: ' . $result);
 
         if (!$result || !$result->getMessage()) {
             $this->getLogger()->warning('Cannot read user message! Perhaps you started this page from outside Telegram.');
             return;
         }
 
-        $this->getLogger()->debug('Result: ', $result);
         $text = $result->getMessage()->getText();
         $chat_id = $result->getMessage()->getChat()->getId();
         $first_name = $result->getMessage()->getChat()->getFirstName();
@@ -82,8 +82,8 @@ class Listener
                 break;
             case '/help':
             case "\xE2\x9E\xA1 Помощь":
-                $answer = 'Смотри, основные команды — это /start и /help и пока этого достаточно.
-                    В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет.';
+                $answer = 'Смотри, основные команды — это /start и /help и пока этого достаточно.' .
+                    'В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет.';
                 break;
             default:
                 $answer = 'Я получил твоё сообщение и рассмотрю его :-)';
