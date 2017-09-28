@@ -58,42 +58,43 @@ class Listener
 
         $result = $this->getApi()->getWebhookUpdates();
 
-        if ($result && $result->getMessage()) {var_dump($result); //
-            $text = $result->getMessage()->getText();
-            $chat_id = $result->getMessage()->getChat()->getId();
-            $first_name = $result->getMessage()->getChat()->getFirstName();
-
-            $keyboard = [["\xE2\x9E\xA1 Помощь"]];
-
-            $answer = '';
-            $reply_markup = null;
-
-            switch ($text) {
-                case '/start':
-                    $answer = 'Привет, ' . $first_name . '! Я SkoobyBot. Как дела?';
-                    $reply_markup = $this->getApi()->replyKeyboardMarkup(
-                        ['keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false]
-                    );
-                    break;
-                case '/help':
-                case "\xE2\x9E\xA1 Помощь":
-                    $answer = 'Смотри, основные команды — это /start и /help и пока этого достаточно.
-                        В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет.';
-                    break;
-                default:
-                    $answer = 'Я получил твоё сообщение и рассмотрю его :-)';
-                    break;
-            }
-
-            try {
-                $this->getApi()->sendMessage(['chat_id' => $chat_id, 'text' => $answer, 'reply_markup' => $reply_markup]);
-            } catch (\Exception $e) {
-                $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
-                throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
-            }
+        if (!$result || !$result->getMessage()) {
+            $this->getLogger()->warning('Cannot read user message! Perhaps you started this page from outside Telegram.');
+            return;
         }
-        else {
-            $this->getLogger()->warning('Cannot read user message! Perhaps you started this page from browser.');
+
+        $this->getLogger()->warning('Result: ' . $result);
+        $text = $result->getMessage()->getText();
+        $chat_id = $result->getMessage()->getChat()->getId();
+        $first_name = $result->getMessage()->getChat()->getFirstName();
+
+        $keyboard = [["\xE2\x9E\xA1 Помощь"]];
+
+        $answer = '';
+        $reply_markup = null;
+
+        switch ($text) {
+            case '/start':
+                $answer = 'Привет, ' . $first_name . '! Я SkoobyBot. Как дела?';
+                $reply_markup = $this->getApi()->replyKeyboardMarkup(
+                    ['keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false]
+                );
+                break;
+            case '/help':
+            case "\xE2\x9E\xA1 Помощь":
+                $answer = 'Смотри, основные команды — это /start и /help и пока этого достаточно.
+                    В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет.';
+                break;
+            default:
+                $answer = 'Я получил твоё сообщение и рассмотрю его :-)';
+                break;
+        }
+
+        try {
+            $this->getApi()->sendMessage(['chat_id' => $chat_id, 'text' => $answer, 'reply_markup' => $reply_markup]);
+        } catch (\Exception $e) {
+            $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
+            throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
         }
     }
 }
