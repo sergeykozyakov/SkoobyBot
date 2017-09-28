@@ -1,9 +1,6 @@
 <?php
 namespace SkoobyBot;
 
-require_once 'Config.php';
-require_once 'Listener.php';
-
 use SkoobyBot\Config;
 use SkoobyBot\Listener;
 

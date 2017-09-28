@@ -12,8 +12,7 @@ class Listener
 
     public function __construct($logger) {
         if (!$logger) {
-            echo 'SkoobyBot Logger is not defined!';
-            return;
+            throw new \Exception('[ERROR] SkoobyBot Logger is not defined!');
         }
 
         $this->setLogger($logger);
@@ -21,7 +20,7 @@ class Listener
 
         if (!$token) {
             $this->getLogger()->error('No Telegram token is specified!');
-            return;
+            throw new \Exception('[ERROR] No Telegram token is specified!');
         }
 
         try {
@@ -29,7 +28,7 @@ class Listener
             $this->setApi($api);
         } catch (\Exception $e) {
             $this->getLogger()->error('Telegram API connection error! '. $e->getMessage());
-            return;
+            throw new \Exception('[ERROR] Telegram API connection error!');
         }
     }
 
@@ -42,19 +41,19 @@ class Listener
         return $this;
     }
 
+    protected function getApi() {
+        return $this->api;
+    }
+
     protected function setApi($api) {
         $this->api = $api;
         return $this;
     }
 
-    public function getApi() {
-        return $this->api;
-    }
-
     public function getUpdates() {
         if (!$this->getApi()) {
             $this->getLogger()->error('Cannot receive user message until connection is created!');
-            return;
+            throw new \Exception('[ERROR] Cannot receive user message until connection is created!');
         }
 
         $result = $this->getApi()->getWebhookUpdates();
@@ -88,6 +87,7 @@ class Listener
                 $this->getApi()->sendMessage(['chat_id' => $chat_id, 'text' => $answer, 'reply_markup' => $reply_markup]);
             } catch (\Exception $e) {
                 $this->getLogger()->error('Cannot send bot message via Telegram API! '. $e->getMessage());
+                throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
             }
         }
         else {

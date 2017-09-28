@@ -1,7 +1,23 @@
 {
+    "name": "sergeykozyakov/SkoobyBot",
+    "description": "Telegram bot for VK posts import and making some special stuff",
+    "homepage": "https://github.com/sergeykozyakov",
+    "authors": [
+        {
+            "name": "Sergey Kozyakov",
+            "email": "koziakov@ya.ru",
+            "homepage": "https://github.com/sergeykozyakov/SkoobyBot"
+        }
+    ],
     "require": {
         "php":">=5.5.0",
         "irazasyed/telegram-bot-sdk": "2.2.0",
         "katzgrau/klogger": "dev-master"
-    }
+    },
+    "autoload": {
+        "psr-4": {
+            "SkoobyBot\\": "src/"
+        }
+    },
+    "scripts": {}
 }
