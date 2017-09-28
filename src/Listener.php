@@ -2,27 +2,23 @@
 namespace SkoobyBot;
 
 use SkoobyBot\Config;
+
 use Telegram\Bot\Api;
-use Katzgrau\KLogger\Logger;
-use Psr\Log\LogLevel;
 
 class Listener
 {
     protected $logger = null;
     protected $api = null;
 
-    public function __construct()
-    {
-        try {
-            $logDir = Config::getLogDir();
-            $logger = new Logger(__DIR__ . '/' . $logDir, LogLevel::WARNING);
-            $this->setLogger($logger);
-        } catch (\Exception $e) {
-            echo 'SkoobyBot Logger system does not work! App is stopped.';
+    public function __construct($logger) {
+        if (!$logger) {
+            echo 'SkoobyBot Logger is not defined!';
             return;
         }
 
+        $this->setLogger($logger);
         $token = Config::getTelegramToken();
+
         if (!$token) {
             $this->getLogger()->error('No Telegram token is specified!');
             return;
@@ -37,39 +33,38 @@ class Listener
         }
     }
 
-    public function getLogger() {
+    protected function getLogger() {
         return $this->logger;
     }
 
-    public function setLogger($logger) {
+    protected function setLogger($logger) {
         $this->logger = $logger;
         return $this;
     }
-    
-    public function getApi() {
-        return $this->api;
-    }
 
-    public function setApi($api) {
+    protected function setApi($api) {
         $this->api = $api;
         return $this;
     }
 
-    public function getUpdates()
-    {
+    public function getApi() {
+        return $this->api;
+    }
+
+    public function getUpdates() {
         if (!$this->getApi()) {
             $this->getLogger()->error('Cannot receive user message until connection is created!');
             return;
         }
-        
+
         $result = $this->getApi()->getWebhookUpdates();
-            
+
         if ($result && isset($result['message'])) {
             $text = $result['message']['text'];
             $chat_id = $result['message']['chat']['id'];
-            
+
             $keyboard = [["\xE2\x9E\xA1 Помощь"]];
-            
+
             $answer = '';
             $reply_markup = null;
 
