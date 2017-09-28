@@ -12,7 +12,7 @@ class Listener
 
     public function __construct($logger) {
         if (!$logger) {
-            throw new \Exception('[ERROR] SkoobyBot Logger is not defined!');
+            throw new \Exception('[ERROR] Skooby Bot Logger is not defined!');
         }
 
         $this->setLogger($logger);
@@ -67,14 +67,14 @@ class Listener
         $chat_id = $result->getMessage()->getChat()->getId();
         $first_name = $result->getMessage()->getChat()->getFirstName();
 
-        $keyboard = [["\xE2\x9E\xA1 Помощь"]];
+        $keyboard = [["\xE2\x9E\xA1 Помощь"], ["\xE2\x9E\xA1 Последний пост VK"]];
 
         $answer = '';
         $reply_markup = null;
 
         switch ($text) {
             case '/start':
-                $answer = 'Привет, ' . $first_name . '! Я SkoobyBot. Как дела?';
+                $answer = 'Привет, ' . $first_name . '! Я Skooby Bot. Как дела?';
                 $reply_markup = $this->getApi()->replyKeyboardMarkup(
                     ['keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false]
                 );
@@ -82,7 +82,12 @@ class Listener
             case '/help':
             case "\xE2\x9E\xA1 Помощь":
                 $answer = 'Смотри, основные команды — это /start и /help и пока этого достаточно. ' .
-                    'В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет.';
+                    'В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет.\n\n' .
+                    'Ещё недавно появился запрос последнего поста из VK — это /getPost.';
+                break;
+            case '/getPost':
+            case "\xE2\x9E\xA1 Последний пост VK":
+                $answer = 'Здесь будет выгрузка последнего поста из VK...';
                 break;
             default:
                 $answer = 'Я получил твоё сообщение и рассмотрю его :-)';
