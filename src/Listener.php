@@ -63,7 +63,7 @@ class Listener
             return;
         }
 
-        $this->getLogger()->warning('Result: ' . $result);
+        $this->getLogger()->debug('Result: ', $result);
         $text = $result->getMessage()->getText();
         $chat_id = $result->getMessage()->getChat()->getId();
         $first_name = $result->getMessage()->getChat()->getFirstName();
