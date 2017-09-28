@@ -4,6 +4,8 @@ namespace SkoobyBot;
 use SkoobyBot\Config;
 
 use Telegram\Bot\Api;
+use VK\VK;
+use VK\VKException;
 
 class Listener
 {
@@ -82,12 +84,106 @@ class Listener
             case '/help':
             case "\xE2\x9E\xA1 Помощь":
                 $answer = 'Смотри, основные команды — это /start и /help и пока этого достаточно. ' .
-                    'В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет.\n\n' .
+                    'В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет.' .
                     'Ещё недавно появился запрос последнего поста из VK — это /getPost.';
                 break;
             case '/getPost':
             case "\xE2\x9E\xA1 Последний пост VK":
-                $answer = 'Здесь будет выгрузка последнего поста из VK...';
+                // Начало неформатированного небезопасного кода
+                $vk_token = Config::getVkToken();
+                // проверить наличие токена
+
+                $answer = 'Вот так :-)';
+
+                try {
+                    $vk = new VK('6198731', 'ReoT7Z9tDWFMtszboXEE');
+                    $posts = $vk->api('wall.get', array(
+                        'owner_id' => '3485547',
+                        'count' => 1,
+                        'filter' => 'owner',
+                        'v' => '5.60',
+                        'lang' => 'ru',
+                        'access_token' => $vk_token
+                    ));
+
+                    if (!$posts || !isset($posts['response']) || !isset($posts['response']['items'])) {
+                        $answer = 'Не могу получить последний пост из VK. Извини. Упал на этапе обработки.' . serialize($posts);
+                        break;
+                    }
+
+                    foreach ($posts['response']['items'] as $post) {
+                        if ($post['post_type'] != 'post' || isset($post['copy_history'])) continue;
+
+                        $post_id = $post['id'];
+                        $post_text = $post['text']; // распарсить ссылки
+                        $post_photos = array();
+
+                        if (isset($post['attachments'])) {
+                            foreach ($post['attachments'] as $attachment) {
+                                switch ($attachment['type']) {
+                                    case 'photo':
+                                        $attachment_text = $attachment['photo']['text'];
+                                        $attachment_url = '';
+
+                                        $photo_size_arr = array(1280, 807, 604, 130, 75);
+                                        foreach ($photo_size_arr as $photo_size) {
+                                            if (isset($attachment['photo']['photo_' . $photo_size])) {
+                                                $attachment_url = $attachment['photo']['photo_' . $photo_size];
+                                                break;
+                                            }
+                                        }
+
+                                        $post_photos[] = array('text' => $attachment_text, 'url' => $attachment_url);
+                                        break;
+                                    default:
+                                        // подумать об обработке геоданных
+                                        break;
+                                }
+                                
+                            }
+                        }
+                        
+                        if ($post_text) {
+                            try {
+                                $this->getApi()->sendMessage(['chat_id' => $chat_id, 'text' => $post_text]);
+                            } catch (\Exception $e) {
+                                $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
+                                throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
+                            }
+                        }
+                        
+                        if (count($post_photos) > 0) {
+                            foreach($post_photos as $post_photo) {
+                                try {
+                                    $this->getApi()->sendPhoto(['chat_id' => $chat_id, 'caption' => $post_photo['text'], 'photo' => $post_photo['url']]);
+                                } catch (\Exception $e) {
+                                    $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
+                                    throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
+                                }
+                            }
+                        }
+                        
+                        //if (!$post_text && count($post_photos) == 0) {
+                            try {
+                                $this->getApi()->sendMessage([
+                                    'chat_id' => $chat_id,
+                                    'parse_mode' => 'HTML',
+                                    'disable_web_page_preview' => true,
+                                    'text' => '<a href="https://vk.com/id3485547?w=wall3485547_' . $post_id . '%2Fall">https://vk.com/id3485547?w=wall3485547_' . $post_id . '%2Fall</a>'
+                                ]);
+                            } catch (\Exception $e) {
+                                $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
+                                throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
+                            }
+                        //}
+                        
+                        break;
+                    }
+                } catch (VKException $e) {
+                    $this->getLogger()->error('VK API connection error! ' . $e->getMessage());
+                    $answer = 'Не могу получить последний пост из VK. Извини. Даже не смог подключиться к серверу.';
+                }
+                // Конец неформатированного небезопасного кода
                 break;
             default:
                 $answer = 'Я получил твоё сообщение и рассмотрю его :-)';

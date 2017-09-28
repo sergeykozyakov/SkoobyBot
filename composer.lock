@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "6275b0e7a3c21bbbb4776f88afc8cf48",
+    "content-hash": "ecf3238b70e0fedaf31ba7b52d65469c",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -609,6 +609,48 @@
                 "psr-3"
             ],
             "time": "2016-10-10T12:19:37+00:00"
+        },
+        {
+            "name": "vladkens/vk",
+            "version": "v0.1.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/vladkens/VK.git",
+                "reference": "bab4b4763764e443982963617c208ec3db7c52f5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/vladkens/VK/zipball/bab4b4763764e443982963617c208ec3db7c52f5",
+                "reference": "bab4b4763764e443982963617c208ec3db7c52f5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "VK": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Vlad Pronsky",
+                    "email": "vladkens@yandex.ru"
+                }
+            ],
+            "description": "The PHP class for vk.com API with support OAuth.",
+            "keywords": [
+                "api",
+                "oauth",
+                "vk",
+                "vk.com"
+            ],
+            "time": "2015-08-02T19:34:58+00:00"
         }
     ],
     "packages-dev": [],
