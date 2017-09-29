@@ -67,11 +67,11 @@ class BaseCommand
         return $this->chatId;
     }
 
-    public getName() {
+    public function getName() {
         return $this->name;
     }
 
-    public start() {
+    public function start() {
         if (!$this->getMessage()) {
             $this->getLogger()->error('Telegram API message is not defined!');
             throw new \Exception('[ERROR] Telegram API message is not defined!');
@@ -81,7 +81,7 @@ class BaseCommand
         $this->sendMessage($response);
     }
 
-    private sendMessage($text, $parseMode = null, $disablePreview = null) {
+    private function sendMessage($text, $parseMode = null, $disablePreview = null) {
         if (!$this->getChatId()) {
             $this->getLogger()->error('Telegram API chat id is not defined!');
             throw new \Exception('[ERROR] Telegram API chat id is not defined!');
@@ -101,7 +101,7 @@ class BaseCommand
         }
     }
 
-    private sendPhoto($photo, $caption = null) {
+    private function sendPhoto($photo, $caption = null) {
         if (!$this->getChatId()) {
             $this->getLogger()->error('Telegram API chat id is not defined!');
             throw new \Exception('[ERROR] Telegram API chat id is not defined!');
