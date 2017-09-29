@@ -76,8 +76,10 @@ class Listener
 
                 try {
                     $startCommand = new StartCommand($this->getApi(), $this->getLogger());
-                    //$startCommand->setMessage($result->getMessage())->setReplyMarkup($replyMarkup)->start();
-                    $startCommand->setMessage($result->getMessage())->start();
+                    $startCommand
+                        ->setMessage($result->getMessage())
+                        ->setReplyMarkup($replyMarkup)
+                        ->start();
                 } catch (\Exception $e) {
                     $this->getLogger()->error('Cannot execute bot /start command!');
                     throw new \Exception('[ERROR] Cannot execute bot /start command!');
