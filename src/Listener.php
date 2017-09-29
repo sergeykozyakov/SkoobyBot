@@ -203,7 +203,9 @@ class Listener
             default:
                 try {
                     $defaultCommand = new BaseCommand($this->getApi(), $this->getLogger());
-                    $defaultCommand->setMessage($result->getMessage())->start();
+                    $defaultCommand
+                        ->setMessage($result->getMessage())
+                        ->start();
                 } catch (\Exception $e) {
                     $this->getLogger()->error('Cannot execute bot default command!');
                     throw new \Exception('[ERROR] Cannot execute bot default command!');
