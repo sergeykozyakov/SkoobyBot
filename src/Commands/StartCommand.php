@@ -4,8 +4,6 @@ namespace SkoobyBot\Commands;
 
 use SkoobyBot\Commands\BaseCommand;
 
-use Telegram\Bot\Exceptions\TelegramSDKException;
-
 class StartCommand extends BaseCommand
 {
     protected $name = 'start';
