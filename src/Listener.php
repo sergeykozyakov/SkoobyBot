@@ -7,9 +7,6 @@ use SkoobyBot\Commands\HelpCommand;
 use SkoobyBot\Commands\GetVkCommand;
 use SkoobyBot\Commands\BaseCommand;
 
-use VK\VK;
-use VK\VKException;
-
 use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 

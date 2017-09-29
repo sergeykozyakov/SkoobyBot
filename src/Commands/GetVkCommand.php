@@ -2,8 +2,10 @@
 namespace SkoobyBot\Commands;
 
 use SkoobyBot\Config;
-
 use SkoobyBot\Commands\BaseCommand;
+
+use VK\VK;
+use VK\VKException;
 
 class GetVkCommand extends BaseCommand
 {
