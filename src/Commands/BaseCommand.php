@@ -15,14 +15,13 @@ class BaseCommand
 
     public function __construct($api, $logger) {
         if (!$logger) {
-            throw new \Exception('[ERROR] Logger component is not defined!');
+            throw new \Exception('Logger component is not defined!');
         }
 
         $this->logger = $logger;
 
         if (!$api) {
-            $this->getLogger()->error('Telegram API component is not defined!');
-            throw new \Exception('[ERROR] Telegram API component is not defined!');
+            throw new \Exception('Telegram API component is not defined!');
         }
 
         $this->api = $api;
@@ -42,8 +41,7 @@ class BaseCommand
 
     public function setMessage($message) {
         if (!$message) {
-            $this->getLogger()->error('Telegram API message is null!');
-            throw new \Exception('[ERROR] Telegram API message is null!');
+            throw new \Exception('Telegram API message is null!');
         }
 
         $this->message = $message;
@@ -66,8 +64,7 @@ class BaseCommand
 
     public function start() {
         if (!$this->getMessage()) {
-            $this->getLogger()->error('Telegram API message is not defined!');
-            throw new \Exception('[ERROR] Telegram API message is not defined!');
+            throw new \Exception('Telegram API message is not defined!');
         }
 
         $response = 'Я получил твоё сообщение! Если нужна помощь, то набери /help.';
@@ -76,8 +73,7 @@ class BaseCommand
 
     protected function sendMessage($text, $parseMode = null, $disablePreview = null) {
         if (!$this->getChatId()) {
-            $this->getLogger()->error('Telegram API chat id is not defined!');
-            throw new \Exception('[ERROR] Telegram API chat id is not defined!');
+            throw new \Exception('Telegram API chat id is not defined!');
         }
 
         try {
@@ -89,15 +85,13 @@ class BaseCommand
                 'disable_web_page_preview' => $disablePreview
             ]);
         } catch (TelegramSDKException $e) {
-            $this->getLogger()->error('Cannot send message via Telegram API! ' . $e->getMessage());
-            throw new \Exception('[ERROR] Cannot send message via Telegram API!');
+            throw new \Exception('Cannot send message via Telegram API! (' . $e->getMessage() . ')');
         }
     }
 
     protected function sendPhoto($photo, $caption = null) {
         if (!$this->getChatId()) {
-            $this->getLogger()->error('Telegram API chat id is not defined!');
-            throw new \Exception('[ERROR] Telegram API chat id is not defined!');
+            throw new \Exception('Telegram API chat id is not defined!');
         }
 
         try {
@@ -107,8 +101,7 @@ class BaseCommand
                 'caption' => $caption
             ]);
         } catch (TelegramSDKException $e) {
-            $this->getLogger()->error('Cannot send photo via Telegram API! ' . $e->getMessage());
-            throw new \Exception('[ERROR] Cannot send photo via Telegram API!');
+            throw new \Exception('Cannot send photo via Telegram API! (' . $e->getMessage() . ')');
         }
     }
 }

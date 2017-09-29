@@ -25,16 +25,12 @@ class App
 
     public function start() {
         $logDir = Config::getLogDir();
-        if (!$logDir) {
-            echo '[ERROR] Logger path was not found!';
-            return;
-        }
 
         try {
             $logger = new Logger(__DIR__ . '/' . $logDir, LogLevel::WARNING);
             $this->logger = $logger;
         } catch (\Exception $e) {
-            echo '[ERROR] Logger system does not work! ' . $e->getMessage();
+            echo '[ERROR] Logger system problems occured! ' . $e->getMessage();
             return;
         }
 
@@ -42,7 +38,7 @@ class App
             $listener = new Listener($this->getLogger());
             $listener->getUpdates();
         } catch (\Exception $e) {
-            echo $e->getMessage();
+            echo "Telegram API Listener problems occured:\n" . $e->getMessage();
         }
     }
  

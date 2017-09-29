@@ -7,8 +7,7 @@ class StartCommand extends BaseCommand
 {
     public function start() {
         if (!$this->getMessage()) {
-            $this->getLogger()->error('Telegram API message is not defined!');
-            throw new \Exception('[ERROR] Telegram API message is not defined!');
+            throw new \Exception('Telegram API message is not defined!');
         }
 
         $firstName = $this->getMessage()->getChat()->getFirstName();
