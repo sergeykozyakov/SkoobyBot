@@ -16,15 +16,15 @@ class Listener
 
     public function __construct($logger) {
         if (!$logger) {
-            throw new \Exception('[ERROR] Skooby Bot Logger is not defined!');
+            throw new \Exception('[ERROR] Logger component is not defined!');
         }
 
         $this->setLogger($logger);
         $token = Config::getTelegramToken();
 
         if (!$token) {
-            $this->getLogger()->error('No Telegram token was specified!');
-            throw new \Exception('[ERROR] No Telegram token was specified!');
+            $this->getLogger()->error('No Telegram API token was specified!');
+            throw new \Exception('[ERROR] No Telegram API token was specified!');
         }
 
         try {
@@ -56,20 +56,20 @@ class Listener
 
     public function getUpdates() {
         if (!$this->getApi()) {
-            $this->getLogger()->error('Cannot receive user message until connection is created!');
-            throw new \Exception('[ERROR] Cannot receive user message until connection is created!');
+            $this->getLogger()->error('Cannot receive message until Telegram API is connected!');
+            throw new \Exception('[ERROR] Cannot receive message until Telegram API is connected!');
         }
 
         $result = $this->getApi()->getWebhookUpdates();
 
         if (!$result || !$result->getMessage()) {
-            $this->getLogger()->warning('Cannot read user message! Perhaps you started this page from outside Telegram.');
-           // return;
+            $this->getLogger()->error('Cannot read received Telegram API message!');
+            throw new \Exception('[ERROR] Cannot read received Telegram API message!');
         }
 
-        $text = /*$result->getMessage()->getText()*/ '/getPost';
-        $chatId = /*$result->getMessage()->getChat()->getId()*/'';
-        $firstName = /*$result->getMessage()->getChat()->getFirstName()*/'';
+        $text = $result->getMessage()->getText();
+        $chatId = $result->getMessage()->getChat()->getId();
+        $firstName = $result->getMessage()->getChat()->getFirstName();
 
         $keyboard = [["\xE2\x9E\xA1 Помощь"], ["\xE2\x9E\xA1 Последний пост VK"]];
 
@@ -92,13 +92,13 @@ class Listener
             case '/getPost':
             case "\xE2\x9E\xA1 Последний пост VK":
                 // Начало неформатированного небезопасного кода
-                $vkAppId = Congif::getVkAppId();
+                $vkAppId = Config::getVkAppId();
                 $vkSecret = Config::getVkSecret();
                 $vkToken = Config::getVkToken();
 
                 if (!$vkAppId || !$vkSecret || !$vkToken) {
                     $this->getLogger()->warning('No VK API tokens were specified!');
-                    $answer = 'Нет токенов доступа для подключения к серверу VK!';
+                    $answer = 'Нет ключей доступа для подключения к серверу VK! Извини, это поломка на моей стороне.';
                     break;
                 }
 
@@ -113,8 +113,9 @@ class Listener
                     ));
 
                     if (!$posts || !isset($posts['response']) || !isset($posts['response']['items'])) {
-                        $this->getLogger()->warning('Cannot get correct response from VK!');
-                        $answer = 'Не могу получить корректный ответ от VK!';
+                        $this->getLogger()->warning('Cannot read received VK API response!');
+                        $answer = 'Не могу получить посты из VK! ' .
+                            'Такое бывает, если у пользователя закрыта стена или удалена страница, попробуй потом ещё раз.';
                         break;
                     }
 
@@ -153,8 +154,8 @@ class Listener
                             try {
                                 $this->getApi()->sendMessage(['chat_id' => $chatId, 'text' => $postText]);
                             } catch (TelegramSDKException $e) {
-                                $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
-                                throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
+                                $this->getLogger()->error('Cannot send message via Telegram API! ' . $e->getMessage());
+                                throw new \Exception('[ERROR] Cannot send message via Telegram API!');
                             }
                         }
                         
@@ -163,8 +164,8 @@ class Listener
                                 try {
                                     $this->getApi()->sendPhoto(['chat_id' => $chatId, 'caption' => $postPhoto['text'], 'photo' => $postPhoto['url']]);
                                 } catch (TelegramSDKException $e) {
-                                    $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
-                                    throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
+                                    $this->getLogger()->error('Cannot send photo via Telegram API! ' . $e->getMessage());
+                                    throw new \Exception('[ERROR] Cannot send photo via Telegram API!');
                                 }
                             }
                         }
@@ -178,19 +179,19 @@ class Listener
                                     'text' => '<a href="https://vk.com/id3485547?w=wall3485547_' . $postId . '%2Fall">https://vk.com/id3485547?w=wall3485547_' . $postId . '%2Fall</a>'
                                 ]);
                             } catch (TelegramSDKException $e) {
-                                $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
-                                throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
+                                $this->getLogger()->error('Cannot send link via Telegram API! ' . $e->getMessage());
+                                throw new \Exception('[ERROR] Cannot send link via Telegram API!');
                             }
                         }
                     }
                 } catch (VKException $e) {
                     $this->getLogger()->warning('VK API connection error! ' . $e->getMessage());
-                    $answer = 'Не могу подключиться к серверу VK!';
+                    $answer = 'Не могу подключиться к серверу VK! Попробуй позже.';
                 }
                 // Конец неформатированного небезопасного кода
                 break;
             default:
-                $answer = 'Я получил твоё сообщение и рассмотрю его :-)';
+                $answer = 'Я получил твоё сообщение! Если нужна помощь, то набери /help.';
                 break;
         }
 
@@ -198,8 +199,8 @@ class Listener
             try {
                 $this->getApi()->sendMessage(['chat_id' => $chatId, 'text' => $answer, 'reply_markup' => $replyMarkup]);
             } catch (TelegramSDKException $e) {
-                $this->getLogger()->error('Cannot send bot message via Telegram API! ' . $e->getMessage());
-                throw new \Exception('[ERROR] Cannot send bot message via Telegram API!');
+                $this->getLogger()->error('Cannot send message via Telegram API! ' . $e->getMessage());
+                throw new \Exception('[ERROR] Cannot send message via Telegram API!');
             }
         }
     }
