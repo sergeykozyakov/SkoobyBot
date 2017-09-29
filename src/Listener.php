@@ -2,6 +2,7 @@
 namespace SkoobyBot;
 
 use SkoobyBot\Config;
+
 use SkoobyBot\Commands\StartCommand;
 use SkoobyBot\Commands\HelpCommand;
 use SkoobyBot\Commands\GetVkCommand;

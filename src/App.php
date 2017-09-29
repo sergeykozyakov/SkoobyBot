@@ -43,5 +43,7 @@ class App
     }
  
     private function __clone() {}
-    private function __construct() {}
+    private function __construct() {
+        Config::init();
+    }
 }
