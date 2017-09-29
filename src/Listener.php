@@ -55,12 +55,12 @@ class Listener
 
         if (!$result || !$result->getMessage()) {
             $this->getLogger()->error('Cannot read received Telegram API message!');
-            throw new \Exception('[ERROR] Cannot read received Telegram API message!');
+            //throw new \Exception('[ERROR] Cannot read received Telegram API message!');
         }
 
-        $text = $result->getMessage()->getText();
-        $chatId = $result->getMessage()->getChat()->getId();
-        $firstName = $result->getMessage()->getChat()->getFirstName();
+        $text = /*$result->getMessage()->getText()*/'';
+        $chatId = /*$result->getMessage()->getChat()->getId()*/'123';
+        $firstName = /*$result->getMessage()->getChat()->getFirstName()*/'';
 
         $keyboard = [["\xE2\x9E\xA1 Помощь"], ["\xE2\x9E\xA1 Последний пост VK"]];
 

@@ -12,23 +12,15 @@ class App
     protected $logger = null;
     private static $instance = null;
 
-    private function __clone() {}
-    private function __construct() {}
-
-    protected function getLogger() {
-        return $this->logger;
-    }
-
-    protected function setLogger($logger) {
-        $this->logger = $logger;
-        return $this;
-    }
-
     public static function getInstance() {
         if (null === self::$instance) {
             self::$instance = new self();
         }
         return self::$instance;
+    }
+
+    public function getLogger() {
+        return $this->logger;
     }
 
     public function start() {
@@ -40,7 +32,7 @@ class App
 
         try {
             $logger = new Logger(__DIR__ . '/' . $logDir, LogLevel::WARNING);
-            $this->setLogger($logger);
+            $this->logger = $logger;
         } catch (\Exception $e) {
             echo '[ERROR] Logger system does not work! ' . $e->getMessage();
             return;
@@ -53,4 +45,7 @@ class App
             echo $e->getMessage();
         }
     }
+ 
+    private function __clone() {}
+    private function __construct() {}
 }
