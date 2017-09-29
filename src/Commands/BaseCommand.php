@@ -5,14 +5,13 @@ use Telegram\Bot\Exceptions\TelegramSDKException;
 
 class BaseCommand
 {
-    protected $name = 'default';
-    protected $replyMarkup = null;
-
     protected $logger = null;
     protected $api = null;
 
     protected $message = null;
     protected $chatId = null;
+
+    protected $replyMarkup = null;
 
     public function __construct($api, $logger) {
         if (!$logger) {
@@ -65,10 +64,6 @@ class BaseCommand
         return $this->chatId;
     }
 
-    public function getName() {
-        return $this->name;
-    }
-
     public function start() {
         if (!$this->getMessage()) {
             $this->getLogger()->error('Telegram API message is not defined!');
@@ -79,7 +74,7 @@ class BaseCommand
         $this->sendMessage($response);
     }
 
-    private function sendMessage($text, $parseMode = null, $disablePreview = null) {
+    protected function sendMessage($text, $parseMode = null, $disablePreview = null) {
         if (!$this->getChatId()) {
             $this->getLogger()->error('Telegram API chat id is not defined!');
             throw new \Exception('[ERROR] Telegram API chat id is not defined!');
@@ -99,7 +94,7 @@ class BaseCommand
         }
     }
 
-    private function sendPhoto($photo, $caption = null) {
+    protected function sendPhoto($photo, $caption = null) {
         if (!$this->getChatId()) {
             $this->getLogger()->error('Telegram API chat id is not defined!');
             throw new \Exception('[ERROR] Telegram API chat id is not defined!');
