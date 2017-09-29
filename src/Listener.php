@@ -2,6 +2,7 @@
 namespace SkoobyBot;
 
 use SkoobyBot\Config;
+use SkoobyBot\Commands\StartCommand;
 use SkoobyBot\Commands\BaseCommand;
 
 use VK\VK;
@@ -55,24 +56,32 @@ class Listener
 
         if (!$result || !$result->getMessage()) {
             $this->getLogger()->error('Cannot read received Telegram API message!');
-            //throw new \Exception('[ERROR] Cannot read received Telegram API message!');
+            throw new \Exception('[ERROR] Cannot read received Telegram API message!');
         }
 
-        $text = /*$result->getMessage()->getText()*/'';
-        $chatId = /*$result->getMessage()->getChat()->getId()*/'123';
-        $firstName = /*$result->getMessage()->getChat()->getFirstName()*/'';
-
-        $keyboard = [["\xE2\x9E\xA1 Помощь"], ["\xE2\x9E\xA1 Последний пост VK"]];
+        $text = $result->getMessage()->getText();
+        $chatId = $result->getMessage()->getChat()->getId();
 
         $answer = null;
         $replyMarkup = null;
 
         switch ($text) {
             case '/start':
-                $answer = 'Привет, ' . $firstName . '! Я Skooby Bot. Как дела?';
-                $replyMarkup = $this->getApi()->replyKeyboardMarkup(
-                    ['keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => false]
-                );
+                $keyboard = [["\xE2\x9E\xA1 Помощь"], ["\xE2\x9E\xA1 Последний пост VK"]];
+                $replyMarkup = $this->getApi()->replyKeyboardMarkup([
+                    'keyboard' => $keyboard,
+                    'resize_keyboard' => true,
+                    'one_time_keyboard' => false
+                ]);
+
+                try {
+                    $startCommand = new StartCommand($this->getApi(), $this->getLogger());
+                    //$startCommand->setMessage($result->getMessage())->setReplyMarkup($replyMarkup)->start();
+                    $startCommand->setMessage($result->getMessage())->start();
+                } catch (\Exception $e) {
+                    $this->getLogger()->error('Cannot execute bot /start command!');
+                    throw new \Exception('[ERROR] Cannot execute bot /start command!');
+                }
                 break;
             case '/help':
             case "\xE2\x9E\xA1 Помощь":
