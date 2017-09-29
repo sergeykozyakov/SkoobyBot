@@ -2,6 +2,7 @@
 namespace SkoobyBot;
 
 use SkoobyBot\Config;
+use SkoobyBot\Commands\BaseCommand;
 
 use VK\VK;
 use VK\VKException;
@@ -19,7 +20,7 @@ class Listener
             throw new \Exception('[ERROR] Logger component is not defined!');
         }
 
-        $this->setLogger($logger);
+        $this->logger = $logger;
         $token = Config::getTelegramToken();
 
         if (!$token) {
@@ -29,29 +30,19 @@ class Listener
 
         try {
             $api = new Api($token);
-            $this->setApi($api);
+            $this->api = $api;
         } catch (\Exception $e) {
             $this->getLogger()->error('Telegram API connection error! ' . $e->getMessage());
             throw new TelegramSDKException('[ERROR] Telegram API connection error!');
         }
     }
 
-    protected function getLogger() {
+    public function getLogger() {
         return $this->logger;
     }
 
-    protected function setLogger($logger) {
-        $this->logger = $logger;
-        return $this;
-    }
-
-    protected function getApi() {
+    public function getApi() {
         return $this->api;
-    }
-
-    protected function setApi($api) {
-        $this->api = $api;
-        return $this;
     }
 
     public function getUpdates() {
@@ -191,7 +182,13 @@ class Listener
                 // Конец неформатированного небезопасного кода
                 break;
             default:
-                $answer = 'Я получил твоё сообщение! Если нужна помощь, то набери /help.';
+                try {
+                    $defaultCommand = new BaseCommand($this->getApi(), $this->getLogger());
+                    $defaultCommand.setMessage($result->getMessage()).start();
+                } catch (\Exception $e) {
+                    $this->getLogger()->error('Cannot execute bot default command!');
+                    throw new \Exception('[ERROR] Cannot execute bot default command!');
+                }
                 break;
         }
 
