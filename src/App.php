@@ -34,7 +34,7 @@ class App
     public function start() {
         $logDir = Config::getLogDir();
         if (!$logDir) {
-            echo '[ERROR] Skooby Bot Logger path not found!';
+            echo '[ERROR] Logger path was not found!';
             return;
         }
 
@@ -42,7 +42,7 @@ class App
             $logger = new Logger(__DIR__ . '/' . $logDir, LogLevel::WARNING);
             $this->setLogger($logger);
         } catch (\Exception $e) {
-            echo '[ERROR] Skooby Bot Logger system does not work! ' . $e->getMessage();
+            echo '[ERROR] Logger system does not work! ' . $e->getMessage();
             return;
         }
 
