@@ -1,12 +1,13 @@
 <?php
-
 namespace SkoobyBot\Commands;
 
 use SkoobyBot\Commands\BaseCommand;
 
 class StartCommand extends BaseCommand
 {
-    protected $name = 'start';
+    public function __construct($api, $logger) {
+        parent::__construct($api, $logger);
+    }
 
     public function start() {
         if (!$this->getMessage()) {
