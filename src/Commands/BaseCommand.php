@@ -1,8 +1,6 @@
 <?php
 namespace SkoobyBot\Commands;
 
-use SkoobyBot\Config;
-
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
 class BaseCommand
