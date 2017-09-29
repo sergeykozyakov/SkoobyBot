@@ -3,6 +3,7 @@ namespace SkoobyBot;
 
 use SkoobyBot\Config;
 use SkoobyBot\Commands\StartCommand;
+use SkoobyBot\Commands\HelpCommand;
 use SkoobyBot\Commands\BaseCommand;
 
 use VK\VK;
@@ -87,12 +88,19 @@ class Listener
                 break;
             case '/help':
             case "\xE2\x9E\xA1 Помощь":
-                $answer = 'Смотри, основные команды — это /start и /help и пока этого достаточно. ' .
-                    'В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет. ' .
-                    'Ещё недавно появился запрос последнего поста из VK — это /getPost.';
+                try {
+                    $helpCommand = new HelpCommand($this->getApi(), $this->getLogger());
+                    $helpCommand
+                        ->setMessage($result->getMessage())
+                        ->start();
+                } catch (\Exception $e) {
+                    $this->getLogger()->error('Cannot execute bot /help command!');
+                    throw new \Exception('[ERROR] Cannot execute bot /help command!');
+                }
                 break;
             case '/getPost':
             case "\xE2\x9E\xA1 Последний пост VK":
+                // TODO: перенести в Commands\GetPostCommand
                 // Начало неформатированного небезопасного кода
                 $vkAppId = Config::getVkAppId();
                 $vkSecret = Config::getVkSecret();
