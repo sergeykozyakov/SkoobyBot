@@ -37,22 +37,22 @@ class GetVkCommand extends BaseCommand
         // TODO: заглушка - заменить на чтение из БД
         $json = file_get_contents('../367995212.json');
         $dbRow = json_decode($json, true);
-
+print_r($dbRow);
         $rows = array($dbRow);
         foreach($rows as $row) {
             if (!$this->readWall(
-                $row['vk_wall'], $vkAppId, $vkSecret, $vkToken, $row['channel'], $row['channel'], $row['vk_last_unixtime']
+                $row['vk_wall'], $vkAppId, $vkSecret, $vkToken, $row['channel'], $row['vk_last_unixtime']
             )) break;
         }
         // TODO: конец заглушки - заменить на чтение из БД
     }
 
     private function readWall($wallId, $vkAppId, $vkSecret, $vkToken, $channelId, $vkDate) {
-        if (!$wallId || !$chatId || !$vkDate) {
+        if (!$wallId || !$chatId || !$vkDate || !is_numeric($vkDate)) {
             if (!$this->getIsCron()) {
                 $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No VK API wall_id or Telegram channel were specified!');
 
-                $response = 'Не указана стена VK или Telegram канал для импорта!';
+                $response = "Не указана стена VK или Telegram канал для импорта! $wallId , $channelId, $vkDate";
                 $this->sendMessage($response);
             }
             else {
