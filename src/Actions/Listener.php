@@ -24,6 +24,7 @@ class Listener extends BaseAction
         }
 
         $text = $result->getMessage()->getText();
+        $chatId = $result->getMessage()->getChat()->getId();
 
         switch ($text) {
             case '/start':
@@ -41,7 +42,9 @@ class Listener extends BaseAction
                         ->setReplyMarkup($replyMarkup)
                         ->start();
                 } catch (\Exception $e) {
-                    $this->getLogger()->error('Cannot execute bot /start command: ' . $e->getMessage());
+                    $this->getLogger()->error(
+                        '(chat_id: ' . $chatId . ') Cannot execute bot /start command: ' . $e->getMessage()
+                    );
                     throw new \Exception('[ERROR] Cannot execute bot /start command: ' . $e->getMessage());
                 }
                 break;
@@ -53,7 +56,9 @@ class Listener extends BaseAction
                         ->setMessage($result->getMessage())
                         ->start();
                 } catch (\Exception $e) {
-                    $this->getLogger()->error('Cannot execute bot /help command: ' . $e->getMessage());
+                    $this->getLogger()->error(
+                        '(chat_id: ' . $chatId . ') Cannot execute bot /help command: ' . $e->getMessage()
+                    );
                     throw new \Exception('[ERROR] Cannot execute bot /help command: ' . $e->getMessage());
                 }
                 break;
@@ -65,7 +70,9 @@ class Listener extends BaseAction
                         ->setMessage($result->getMessage())
                         ->start();
                 } catch (\Exception $e) {
-                    $this->getLogger()->error('Cannot execute bot /getVk command: ' . $e->getMessage());
+                    $this->getLogger()->error(
+                        '(chat_id: ' . $chatId . ') Cannot execute bot /getVk command: ' . $e->getMessage()
+                    );
                     throw new \Exception('[ERROR] Cannot execute bot /getVk command: ' . $e->getMessage());
                 }
                 break;
@@ -76,7 +83,9 @@ class Listener extends BaseAction
                         ->setMessage($result->getMessage())
                         ->start();
                 } catch (\Exception $e) {
-                    $this->getLogger()->error('Cannot execute bot default command: ' . $e->getMessage());
+                    $this->getLogger()->error(
+                        '(chat_id: ' . $chatId . ') Cannot execute bot default command: ' . $e->getMessage()
+                    );
                     throw new \Exception('[ERROR] Cannot execute bot default command: ' . $e->getMessage());
                 }
                 break;

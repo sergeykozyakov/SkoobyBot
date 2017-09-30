@@ -8,8 +8,8 @@ class Sender extends BaseAction
 {
     public function start() {
         if (!$this->getApi()) {
-            $this->getLogger()->error('Cannot start sending messages by cron until Telegram API is connected!');
-            throw new \Exception('[ERROR] Cannot start sending messages by cron until Telegram API is connected!');
+            $this->getLogger()->error('(cron) Cannot start sending messages until Telegram API is connected!');
+            throw new \Exception('[ERROR] Cannot start sending messages until Telegram API is connected!');
         }
 
         try {
@@ -18,8 +18,8 @@ class Sender extends BaseAction
                 ->setIsCron(true)
                 ->start();
         } catch (\Exception $e) {
-            $this->getLogger()->error('Cannot execute cron VK API posts import: ' . $e->getMessage());
-            throw new \Exception('[ERROR] Cannot execute cron VK API posts import: ' . $e->getMessage());
+            $this->getLogger()->error('(cron) Cannot execute VK API posts import: ' . $e->getMessage());
+            throw new \Exception('[ERROR] Cannot execute VK API posts import: ' . $e->getMessage());
         }
     }
 }

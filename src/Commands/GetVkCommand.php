@@ -22,11 +22,14 @@ class GetVkCommand extends BaseCommand
         $vkToken = Config::getVkToken();
 
         if (!$vkAppId || !$vkSecret || !$vkToken) {
-            $this->getLogger()->warning('No VK API tokens were specified!');
-
             if (!$this->getIsCron()) {
+                $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No VK API tokens were specified!');
+
                 $response = 'Нет ключей доступа для подключения к серверу VK! Извини, это поломка на моей стороне.';
                 $this->sendMessage($response);
+            }
+            else {
+                $this->getLogger()->warning('(cron) No VK API tokens were specified!');
             }
             return;
         }
@@ -65,22 +68,30 @@ class GetVkCommand extends BaseCommand
                     'lang' => 'ru'
                 ));
             } catch (VKException $e) {
-                $this->getLogger()->warning('VK API connection error! ' . $e->getMessage());
-
                 if (!$this->getIsCron()) {
+                    $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') VK API connection error! ' . $e->getMessage());
+
                     $response = 'Не могу подключиться к серверу VK! Попробуй позже.';
                     $this->sendMessage($response);
+                }
+                else {
+                    $this->getLogger()->warning('(cron) VK API connection error! ' . $e->getMessage());
                 }
                 return false;
             }
 
             if (!$posts || !isset($posts['response']) || !isset($posts['response']['items'])) {
-                $this->getLogger()->warning('Cannot read received VK API response!');
-
                 if (!$this->getIsCron()) {
+                    $this->getLogger()->warning(
+                        '(chat_id: ' . $this->getChatId() . ', vk_wall: ' . $wallId . ') Cannot read received VK API response!'
+                    );
+
                     $response = 'Не могу получить посты из VK! ' .
                         'Такое бывает, если у пользователя закрыта стена или удалена страница, попробуй потом ещё раз.';
                     $this->sendMessage($response);
+                }
+                else {
+                    $this->getLogger()->warning('(cron, vk_wall: ' . $wallId . ') Cannot read received VK API response!');
                 }
                 return true;
             }
@@ -154,12 +165,19 @@ class GetVkCommand extends BaseCommand
                     $this->sendMessage($link, 'HTML', true);
                 }
             } catch (\Exception $e) {
-                $this->getLogger()->warning('Cannot send photo/message to a specified channel via Telegram API!');
-
                 if (!$this->getIsCron()) {
+                    $this->getLogger()->warning(
+                        '(chat_id: ' . $this->getChatId() . ') Cannot send photo/message to channel via Telegram API!'
+                    );
+
                     $response = 'Не могу отправить пост в канал Telegram! ' .
                         'Такое бывает, если у Skooby Bot нет прав на запись в канал или канал указан неверно.';
                     $this->sendMessage($response);
+                }
+                else {
+                    $this->getLogger()->warning(
+                        '(cron, channel: ' . $this->getChatId() . ') Cannot send photo/message to channel via Telegram API!'
+                    );
                 }
                 return true;
             }

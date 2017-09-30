@@ -10,12 +10,9 @@ class HelpCommand extends BaseCommand
             throw new \Exception('Telegram API message is not defined!');
         }
 
-        $userName = $this->getMessage()->getChat()->getUsername();
-        $chatId = $this->getChatId();
-
-        $response = 'Твой код чата = ' . $chatId . ', твой код пользователя = ' . $userName . '. ' .
-            'В принципе, можно любой текст и картинку мне отправить. ' .
-            'Также можно выполнить запрос последнего поста из VK — это /getVk.';
+        $response = 'Смотри, основные команды — это /start и /help. На всякий случай, твой код чата — ' . $this->getChatId() . '. ' .
+            'Основное назначение Skooby Bot — это /getVk. Выполнится запрос последнего поста из VK. ' .
+            'В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет. Peace!';
 
         $this->sendMessage($response);
     }
