@@ -90,7 +90,7 @@ class GetVkCommand extends BaseCommand
 
                 $postId = $post['id'];
                 $ownerId = $post['owner_id'];
-                $postText = preg_replace('/\[(.+)\|(.+)\]/', '\2', $post['text']);
+                $postText = preg_replace('/\[(.+?(?=\|))\|(.+?(?=\]))\]/', '\2', $post['text']);
 
                 $needLink = false;
                 $postPhotos = array();
