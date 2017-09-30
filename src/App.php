@@ -2,7 +2,9 @@
 namespace SkoobyBot;
 
 use SkoobyBot\Config;
-use SkoobyBot\Listener;
+
+use SkoobyBot\Actions\Sender;
+use SkoobyBot\Actions\Listener;
 
 use Katzgrau\KLogger\Logger;
 use Psr\Log\LogLevel;
@@ -34,11 +36,21 @@ class App
             return;
         }
 
-        try {
-            $listener = new Listener($this->getLogger());
-            $listener->getUpdates();
-        } catch (\Exception $e) {
-            echo "Telegram API Listener problems occured:\n" . $e->getMessage();
+        if (isset($_GET['cron'])) {
+            try {
+                $sender = new Sender($this->getLogger());
+                $sender->start();
+            } catch (\Exception $e) {
+                echo "Telegram API Sender problems occured:\n" . $e->getMessage();
+            }
+        }
+        else {
+            try {
+                $listener = new Listener($this->getLogger());
+                $listener->getUpdates();
+            } catch (\Exception $e) {
+                echo "Telegram API Listener problems occured:\n" . $e->getMessage();
+            }
         }
     }
  

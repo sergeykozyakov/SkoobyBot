@@ -1,5 +1,5 @@
 <?php
-namespace SkoobyBot;
+namespace SkoobyBot\Actions;
 
 use SkoobyBot\Config;
 
@@ -11,9 +11,9 @@ use SkoobyBot\Commands\BaseCommand;
 use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
-class Listener
+class BaseAction
 {
-    protected $logger = null;
+    /*protected $logger = null;
     protected $api = null;
 
     public function __construct($logger) {
@@ -117,5 +117,5 @@ class Listener
                 }
                 break;
         }
-    }
+    }*/
 }

@@ -26,18 +26,19 @@ class GetVkCommand extends BaseCommand
             return;
         }
 
-        $wallIds = array('3485547');
+        $wallIds = array('sergeykozyakov', '-86529522');
         foreach($wallIds as $wallId) {
             if (!$this->readWall($wallId, $vkAppId, $vkSecret, $vkToken)) break;
         }
     }
 
-    private function readWall($ownerId, $vkAppId, $vkSecret, $vkToken) {
-        // TODO: добавить проверку на параметры и getMessage
+    private function readWall($wallId, $vkAppId, $vkSecret, $vkToken) {
         $postList = array();
 
         $limit = 3;
         $offset = 1;
+
+        $domain = $wallId && !is_numeric($wallId) ? $wallId : null;
 
         while($offset > -1 && $offset <= 4) {
             $posts = null;
@@ -45,7 +46,8 @@ class GetVkCommand extends BaseCommand
             try {
                 $vk = new VK($vkAppId, $vkSecret, $vkToken);
                 $posts = $vk->api('wall.get', array(
-                    'owner_id' => $ownerId,
+                    'owner_id' => !$domain ? $wallId : null,
+                    'domain' => $domain,
                     'count' => $limit,
                     'offset' => $offset,
                     'filter' => 'owner',
@@ -73,6 +75,7 @@ class GetVkCommand extends BaseCommand
                 if ($post['post_type'] != 'post' || isset($post['copy_history'])) continue;
 
                 $postId = $post['id'];
+                $ownerId = $post['owner_id'];
                 $postText = $post['text']; // TODO: распарсить ссылки [club1959|Радио Рекорд]
                 $postPhotos = array();
 
@@ -100,7 +103,7 @@ class GetVkCommand extends BaseCommand
                     }
                 }
 
-                $postList[] = array('id' => $postId, 'text' => $postText, 'photos' => $postPhotos);
+                $postList[] = array('id' => $postId, 'ownerId' => $ownerId, 'text' => $postText, 'photos' => $postPhotos);
             }
 
             $offset += $limit;
@@ -108,23 +111,26 @@ class GetVkCommand extends BaseCommand
 
         foreach (array_reverse($postList) as $item) {
             try {
-                if (isset($item['text']) && $item['text']) {
+                if ($item['text']) {
                     $this->sendMessage($item['text']);
                 }
 
-                if (isset($item['photos']) && count($item['photos']) > 0) {
+                if (count($item['photos']) > 0) {
                     foreach($item['photos'] as $postPhoto) {
                         $this->sendPhoto($postPhoto['url'], $postPhoto['text']);
                     }
                 }
 
-                if ((!isset($item['text']) || !$item['text']) && (!isset($item['photos']) || count($item['photos']) == 0)) {
-                    $postId = isset($item['id']) ? $item['id'] : null;
-                    $link = '<a href="https://vk.com/id3485547?w=wall3485547_' . $postId . '%2Fall">' .
-                        'https://vk.com/id3485547?w=wall3485547_' . $postId . '%2Fall</a>';
+                //if (!$item['text'] && count($item['photos']) == 0) {
+                    $isGroup = intval($item['ownerId']) < 0;
+                    $ownerAbsId = abs(intval($item['ownerId']));
+                    $ownerUrl = $domain ? $domain : (($isGroup ? 'club' : 'id') . $ownerAbsId);
+
+                    $fullUrl = 'https://vk.com/' . $ownerUrl . '?w=wall' . $item['ownerId'] . '_' . $item['id'];
+                    $link = '<a href="' . $fullUrl . '">' . $fullUrl . '</a>';
 
                     $this->sendMessage($link, 'HTML', true);
-                }
+                //}
             } catch (\Exception $e) {
                 $this->getLogger()->warning('Cannot send photo/message to a specified channel via Telegram API!');
                 $response = 'Не могу отправить пост в канал Telegram! ' .
