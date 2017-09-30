@@ -7,6 +7,7 @@ class BaseCommand
 {
     protected $logger = null;
     protected $api = null;
+    protected $isCron = false;
 
     protected $message = null;
     protected $chatId = null;
@@ -35,6 +36,15 @@ class BaseCommand
         return $this->api;
     }
 
+    public function setIsCron($isCron) {
+        $this->isCron = $isCron;
+        return $this;
+    }
+
+    public function getIsCron() {
+        return $this->isCron;
+    }
+
     public function getMessage() {
         return $this->message;
     }
@@ -49,6 +59,10 @@ class BaseCommand
         return $this;
     }
 
+    public function getChatId() {
+        return $this->chatId;
+    }
+
     public function setReplyMarkup($replyMarkup) {
         $this->replyMarkup = $replyMarkup;
         return $this;
@@ -56,10 +70,6 @@ class BaseCommand
 
     public function getReplyMarkup() {
         return $this->replyMarkup;
-    }
-
-    public function getChatId() {
-        return $this->chatId;
     }
 
     public function start() {
