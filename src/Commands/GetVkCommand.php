@@ -9,7 +9,7 @@ use VK\VKException;
 
 class GetVkCommand extends BaseCommand
 {
-    protected static $limit = 3;
+    protected static $limit = 20;
     protected static $photoSizes = array(1280, 807, 604, 130, 75);
 
     public function start() {
@@ -35,25 +35,44 @@ class GetVkCommand extends BaseCommand
         }
 
         // TODO: заглушка - заменить на чтение из БД
-        if ($this->getIsCron()) {
-            $this->chatId = '@sergeykozyakov_live';
-        }
+        $json = file_get_contents('../367995212.json');
+        $dbRow = json_decode($json, true);
 
-        $wallIds = array('sergeykozyakov');
-        foreach($wallIds as $wallId) {
-            if (!$this->readWall($wallId, $vkAppId, $vkSecret, $vkToken)) break;
+        $rows = array($dbRow);
+        foreach($rows as $row) {
+            if (!$this->readWall(
+                $row['vk_wall'], $vkAppId, $vkSecret, $vkToken, $row['channel'], $row['channel'], $row['vk_last_unixtime']
+            )) break;
         }
         // TODO: конец заглушки - заменить на чтение из БД
     }
 
-    private function readWall($wallId, $vkAppId, $vkSecret, $vkToken) {
+    private function readWall($wallId, $vkAppId, $vkSecret, $vkToken, $channelId, $vkDate) {
+        if (!$wallId || !$chatId || !$vkDate) {
+            if (!$this->getIsCron()) {
+                $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No VK API wall_id or Telegram channel were specified!');
+
+                $response = 'Не указана стена VK или Telegram канал для импорта!';
+                $this->sendMessage($response);
+            }
+            else {
+                $this->getLogger()->warning(
+                    '(cron, chat_id: ' . $chatId . ', vk_wall: ' . $wallId . ') No VK API wall_id or Telegram channel were specified!'
+                );
+            }
+            return true;
+        }
+
+        if ($this->getIsCron()) {
+            $this->chatId = $channelId;
+        }
+
         $offset = 1;
         $postList = array();
 
-        $domain = $wallId && !is_numeric($wallId) ? $wallId : null;
+        $domain = !is_numeric($wallId) ? $wallId : null;
 
-        // TODO: $offset <= 4 заглушка - заменить на проверку даты поста и последней даты БД
-        while($offset > -1 && $offset <= 4) {
+        while($offset > -1) {
             $posts = null;
 
             try {
@@ -97,6 +116,7 @@ class GetVkCommand extends BaseCommand
             }
 
             foreach ($posts['response']['items'] as $post) {
+                if ($post['date'] < $vkDate) break;
                 if ($post['post_type'] != 'post' || isset($post['copy_history'])) continue;
 
                 $postId = $post['id'];
@@ -182,7 +202,7 @@ class GetVkCommand extends BaseCommand
                 return true;
             }
         }
-
+        // TODO: записать в БД для данного chat_id дату самого свежего поста!
         return true;
     }
 }

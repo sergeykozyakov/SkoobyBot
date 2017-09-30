@@ -83,7 +83,7 @@ class BaseCommand
 
     protected function sendMessage($text, $parseMode = null, $disablePreview = null) {
         if (!$this->getChatId()) {
-            throw new \Exception('Telegram API chat id is not defined!');
+            throw new \Exception('Telegram API chat_id is not defined!');
         }
 
         try {
@@ -101,7 +101,7 @@ class BaseCommand
 
     protected function sendPhoto($photo, $caption = null) {
         if (!$this->getChatId()) {
-            throw new \Exception('Telegram API chat id is not defined!');
+            throw new \Exception('Telegram API chat_id is not defined!');
         }
 
         try {
