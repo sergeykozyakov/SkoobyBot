@@ -72,7 +72,7 @@ class GetVkCommand extends BaseCommand
 
         $domain = !is_numeric($wallId) ? $wallId : null;
 
-        while($offset > -1) {
+        while($offset > 0 && $offset < 2) {
             $posts = null;
 
             try {
@@ -116,8 +116,8 @@ class GetVkCommand extends BaseCommand
             }
 
             foreach ($posts['response']['items'] as $post) {
-                if ($post['date'] < $vkDate) break;
-                if ($post['post_type'] != 'post' || isset($post['copy_history'])) continue;
+                if ($post['text'] != 'post' || isset($post['copy_history'])) continue;
+                //if ($post['date'] < $vkDate) break 2;
 
                 $postId = $post['id'];
                 $ownerId = $post['owner_id'];
