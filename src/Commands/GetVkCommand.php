@@ -36,7 +36,7 @@ class GetVkCommand extends BaseCommand
             $this->chatId = '@sergeykozyakov_live';
         }
 
-        $wallIds = array('sergeykozyakov', '-86529522');
+        $wallIds = array('sergeykozyakov');
         foreach($wallIds as $wallId) {
             if (!$this->readWall($wallId, $vkAppId, $vkSecret, $vkToken)) break;
         }
