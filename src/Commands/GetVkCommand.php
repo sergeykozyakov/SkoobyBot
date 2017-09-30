@@ -143,7 +143,7 @@ class GetVkCommand extends BaseCommand
                     }
                 }
 
-                if (!$item['text'] && count($item['photos']) == 0 || $items['needLink']) {
+                if (!$item['text'] && count($item['photos']) == 0 || $item['needLink']) {
                     $isGroup = intval($item['ownerId']) < 0;
                     $ownerAbsId = abs(intval($item['ownerId']));
                     $ownerUrl = $domain ? $domain : (($isGroup ? 'club' : 'id') . $ownerAbsId);
