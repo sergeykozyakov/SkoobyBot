@@ -118,7 +118,7 @@ class GetVkCommand extends BaseCommand
                     }
                 }
 
-                if ((!isset($item['text']) || !$item['text']) && (!isset($item['photos']) || count($item['photos']) == 0) {
+                if ((!isset($item['text']) || !$item['text']) && (!isset($item['photos']) || count($item['photos']) == 0)) {
                     $postId = isset($item['id']) ? $item['id'] : null;
                     $link = '<a href="https://vk.com/id3485547?w=wall3485547_' . $postId . '%2Fall">' .
                         'https://vk.com/id3485547?w=wall3485547_' . $postId . '%2Fall</a>';
