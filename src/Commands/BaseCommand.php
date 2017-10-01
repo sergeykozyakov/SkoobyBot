@@ -8,7 +8,7 @@ use Telegram\Bot\Exceptions\TelegramSDKException;
 class BaseCommand
 {
     protected $logger = null;
-    protected $api = null
+    protected $api = null;
     protected $user = null;
 
     protected $isCron = false;

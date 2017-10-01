@@ -54,7 +54,7 @@ class User
         }
 
         if (count($this->getUser($chatId)) > 0) {
-            return;
+            //return;
         }
 
         $sql = 'INSERT INTO users (id, chat_id, bot_state, vk_wall, vk_last_unixtime, channel)
@@ -62,10 +62,11 @@ class User
 
         $stmt = $this->getDb()->prepare($sql);
         
-        if ($chatId == '367995212') { // TODO: временная заглушка для меня
+        //if ($chatId == '367995212') { // TODO: временная заглушка для меня
             $stmt->execute(array($chatId, '', 'sergeykozyakov', 1500394060, '@sergeykozyakov_live'));
-        }
-        $stmt->execute(array($chatId, '', '', time(), ''));
+            return;
+        //}
+        //$stmt->execute(array($chatId, '', '', time(), ''));
     }
 
     public function getUser($chatId) {
