@@ -61,11 +61,6 @@ class User
             VALUES (NULL, ?, ?, ?, ?, ?)';
 
         $stmt = $this->getDb()->prepare($sql);
-        
-        if ($chatId == '367995212') { // TODO: временная заглушка для меня
-            $stmt->execute(array($chatId, '', 'sergeykozyakov', 1500394060, '@sergeykozyakov_live'));
-            return;
-        }
         $stmt->execute(array($chatId, '', '', time(), ''));
     }
 
