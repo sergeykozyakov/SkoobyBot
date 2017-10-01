@@ -35,7 +35,7 @@ class User
             chat_id VARCHAR(512),
             bot_state VARCHAR(512),
             vk_wall VARCHAR(512),
-            vk_last_unixtime INT,
+            vk_last_unixtime VARCHAR(512),
             channel VARCHAR(512)
         )';
 
@@ -53,8 +53,8 @@ class User
             throw new \Exception('chat_id is not defined!');
         }
 
-        if (count($this->getUser($chatId)) > 0) {
-            //return;
+        if (!empty($this->getUser($chatId))) {
+            return;
         }
 
         $sql = 'INSERT INTO users (id, chat_id, bot_state, vk_wall, vk_last_unixtime, channel)
@@ -62,11 +62,11 @@ class User
 
         $stmt = $this->getDb()->prepare($sql);
         
-        //if ($chatId == '367995212') { // TODO: временная заглушка для меня
-            $stmt->execute(array($chatId, '', 'sergeykozyakov', 1500394060, '@sergeykozyakov_live'));
+        if ($chatId == '367995212') { // TODO: временная заглушка для меня
+            $stmt->execute(array($chatId, '', 'sergeykozyakov', '1500394060', '@sergeykozyakov_live'));
             return;
-        //}
-        //$stmt->execute(array($chatId, '', '', time(), ''));
+        }
+        $stmt->execute(array($chatId, '', '', time(), ''));
     }
 
     public function getUser($chatId) {
@@ -116,10 +116,10 @@ class User
             throw new \Exception('chat_id is not defined!');
         }
 
-        $sql = 'UPDATE users SET ? = ? WHERE chat_id = ?';
+        $sql = 'UPDATE users SET ' . $field . ' = ? WHERE chat_id = ?';
 
         $stmt = $this->getDb()->prepare($sql);
-        $stmt->execute(array($field, $param, $chatId));
+        $stmt->execute(array($param, $chatId));
     }
 
     private function __clone() {}

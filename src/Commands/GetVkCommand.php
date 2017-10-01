@@ -81,7 +81,7 @@ class GetVkCommand extends BaseCommand
         $vkWall = $row['vk_wall'];
         $channel = $row['channel'];
         $vkLastUnixTime = $row['vk_last_unixtime'];
-        $originalChatId = $this->getChatId();
+        $originalChatId = $row['chat_id'];
 
         if ($this->getIsCron()) {
             $this->chatId = $channel;
