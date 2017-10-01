@@ -34,43 +34,63 @@ class GetVkCommand extends BaseCommand
             return;
         }
 
-        // TODO: заглушка - заменить на чтение из БД
-        $json = file_get_contents('../367995212.json');
-        $dbRow = json_decode($json, true);
+        $rows = array();
+        if (!$this->getIsCron()) {
+            try {
+                $rows[] = $this->getUser()->getUser($this->getChatId());
+            } catch (\Exception $e) {
+                $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') Cannot get user(s) from database (' . $e->getMessage() . ')');
 
-        $rows = array($dbRow);
+                $response = 'Не могу получить информацию о тебе! Попробуй позже.';
+                $this->sendMessage($response);
+                return;
+            }
+        }
+        else {
+            try {
+                $rows = $this->getUser()->getAllUsers();
+            } catch (\Exception $e) {
+                $this->getLogger()->warning('(cron) Cannot get user list from database (' . $e->getMessage() . ')');
+                return;
+            }
+        }
+
         foreach($rows as $row) {
-            if (!$this->readWall($row['vk_wall'], $vkAppId, $vkSecret, $vkToken, $row['channel'], $row['vk_last_unixtime'])) {
+            if (!$this->readWall($row, $vkAppId, $vkSecret, $vkToken)) {
                 break;
             }
         }
-        // TODO: конец заглушки - заменить на чтение из БД
     }
 
-    private function readWall($wallId, $vkAppId, $vkSecret, $vkToken, $channelId, $vkDate) {
-        if (!$wallId || !$channelId || !$vkDate || !is_numeric($vkDate)) {
+    private function readWall($row, $vkAppId, $vkSecret, $vkToken) {
+        if (!$row || !isset($row['vk_wall']) || !isset($row['channel']) || !isset($row['vk_last_unixtime'])) {
             if (!$this->getIsCron()) {
-                $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No VK API wall_id or Telegram channel were specified!');
+                $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No user information was specified!');
 
-                $response = 'Не указана стена VK или Telegram канал для импорта!';
+                $response = 'Не могу получить информацию о твоих привязках к VK!';
                 $this->sendMessage($response);
             }
             else {
                 $this->getLogger()->warning(
-                    '(cron, channel: ' . $channelId . ', vk_wall: ' . $wallId . ') No VK API wall_id or Telegram channel were specified!'
+                    '(cron, channel: ' . $row['channel'] . ', vk_wall: ' . $row['vk_wall'] . ') No user information was specified!'
                 );
             }
             return true;
         }
 
+        $vkWall = $row['vk_wall'];
+        $channel = $row['channel'];
+        $vkLastUnixTime = $row['vk_last_unixtime'];
+        $originalChatId = $this->getChatId();
+
         if ($this->getIsCron()) {
-            $this->chatId = $channelId;
+            $this->chatId = $channel;
         }
 
         $offset = 1;
         $postList = array();
 
-        $domain = !is_numeric($wallId) ? $wallId : null;
+        $domain = !is_numeric($vkWall) ? $vkWall : null;
 
         while($offset > 0) {
             $posts = null;
@@ -78,7 +98,7 @@ class GetVkCommand extends BaseCommand
             try {
                 $vk = new VK($vkAppId, $vkSecret, $vkToken);
                 $posts = $vk->api('wall.get', array(
-                    'owner_id' => !$domain ? $wallId : null,
+                    'owner_id' => !$domain ? $vkWall : null,
                     'domain' => $domain,
                     'count' => self::$limit,
                     'offset' => $offset,
@@ -102,7 +122,7 @@ class GetVkCommand extends BaseCommand
             if (!$posts || !isset($posts['response']) || !isset($posts['response']['items'])) {
                 if (!$this->getIsCron()) {
                     $this->getLogger()->warning(
-                        '(chat_id: ' . $this->getChatId() . ', vk_wall: ' . $wallId . ') Cannot read received VK API response!'
+                        '(chat_id: ' . $this->getChatId() . ', vk_wall: ' . $vkWall . ') Cannot read received VK API response!'
                     );
 
                     $response = 'Не могу получить посты из VK! ' .
@@ -110,17 +130,21 @@ class GetVkCommand extends BaseCommand
                     $this->sendMessage($response);
                 }
                 else {
-                    $this->getLogger()->warning('(cron, vk_wall: ' . $wallId . ') Cannot read received VK API response!');
+                    $this->getLogger()->warning('(cron, vk_wall: ' . $vkWall . ') Cannot read received VK API response!');
                 }
                 return true;
             }
 
             foreach ($posts['response']['items'] as $post) {
                 if ($post['post_type'] != 'post' || isset($post['copy_history'])) continue;
-                if ($post['date'] < $vkDate) break 2;
+
+                if ($this->getIsCron()) {
+                    if ($post['date'] < $vkLastUnixTime) break 2;
+                }
 
                 $postId = $post['id'];
                 $ownerId = $post['owner_id'];
+                $date = $post['date'];
                 $postText = preg_replace('/\[(.+?(?=\|))\|(.+?(?=\]))\]/', '\2', $post['text']);
 
                 $needLink = false;
@@ -153,13 +177,25 @@ class GetVkCommand extends BaseCommand
                 $postList[] = array(
                     'id' => $postId,
                     'ownerId' => $ownerId,
+                    'date' => $date,
                     'text' => $postText,
                     'photos' => $postPhotos,
                     'needLink' => $needLink
                 );
+
+                if (!$this->getIsCron()) {
+                    break 2;
+                }
             }
 
             $offset += self::$limit;
+        }
+
+        if (!$this->getIsCron() && count($postList) == 0) {
+            $response = 'Пока нет ни одного поста.';
+            $this->sendMessage($response);
+
+            return true;
         }
 
         foreach (array_reverse($postList) as $item) {
@@ -184,15 +220,19 @@ class GetVkCommand extends BaseCommand
 
                     $this->sendMessage($link, 'HTML', true);
                 }
+
+                if ($this->getIsCron()) {
+                    try {
+                        $this->getUser()->setVkLastUnixtime($originalChatId, $date);
+                    } catch (\Exception $e) {
+                        $this->getLogger()->warning(
+                            '(cron, chat_id: ' . $originalChatId . ') Cannot set user vk_last_unixtime to database (' . $e->getMessage() . ')'
+                        );
+                    }
+                }
             } catch (\Exception $e) {
                 if (!$this->getIsCron()) {
-                    $this->getLogger()->warning(
-                        '(chat_id: ' . $this->getChatId() . ') Cannot send photo/message to channel via Telegram API!'
-                    );
-
-                    $response = 'Не могу отправить пост в канал Telegram! ' .
-                        'Такое бывает, если у Skooby Bot нет прав на запись в канал или канал указан неверно.';
-                    $this->sendMessage($response);
+                    throw new \Exception($e->getMessage());
                 }
                 else {
                     $this->getLogger()->warning(
@@ -202,7 +242,7 @@ class GetVkCommand extends BaseCommand
                 return true;
             }
         }
-        // TODO: записать в БД для данного chat_id дату самого свежего поста!
+
         return true;
     }
 }

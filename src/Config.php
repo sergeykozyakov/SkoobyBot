@@ -19,6 +19,10 @@ class Config
         return self::LOG_DIR;
     }
 
+    public static function getDbString() {
+        return self::get('CLEARDB_DATABASE_URL');
+    }
+
     public static function getTelegramToken() {
         return self::get('TELEGRAM_TOKEN');
     }

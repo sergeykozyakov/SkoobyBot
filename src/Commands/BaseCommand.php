@@ -1,12 +1,16 @@
 <?php
 namespace SkoobyBot\Commands;
 
+use SkoobyBot\Databases\User;
+
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
 class BaseCommand
 {
     protected $logger = null;
-    protected $api = null;
+    protected $api = null
+    protected $user = null;
+
     protected $isCron = false;
 
     protected $message = null;
@@ -26,6 +30,7 @@ class BaseCommand
         }
 
         $this->api = $api;
+        $this->user = User::getInstance();
     }
 
     public function getLogger() {
@@ -34,6 +39,10 @@ class BaseCommand
 
     public function getApi() {
         return $this->api;
+    }
+
+    public function getUser() {
+        return $this->user;
     }
 
     public function setIsCron($isCron) {

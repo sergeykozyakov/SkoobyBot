@@ -2,6 +2,7 @@
 namespace SkoobyBot;
 
 use SkoobyBot\Config;
+use SkoobyBot\Databases\User;
 
 use SkoobyBot\Actions\Sender;
 use SkoobyBot\Actions\Listener;
@@ -33,6 +34,14 @@ class App
             $this->logger = $logger;
         } catch (\Exception $e) {
             echo '[ERROR] Logger system problems occured! ' . $e->getMessage();
+            return;
+        }
+
+        try {
+            $user = User::getInstance($this->getLogger());
+            $user->init();
+        } catch (\Exception $e) {
+            echo "Database connection problems occured:\n" . $e->getMessage();
             return;
         }
 
