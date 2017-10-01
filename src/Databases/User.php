@@ -35,7 +35,7 @@ class User
             chat_id VARCHAR(512),
             bot_state VARCHAR(512),
             vk_wall VARCHAR(512),
-            vk_last_unixtime VARCHAR(512),
+            vk_last_unixtime INT,
             channel VARCHAR(512)
         )';
 
@@ -63,7 +63,7 @@ class User
         $stmt = $this->getDb()->prepare($sql);
         
         if ($chatId == '367995212') { // TODO: временная заглушка для меня
-            $stmt->execute(array($chatId, '', 'sergeykozyakov', '1500394060', '@sergeykozyakov_live'));
+            $stmt->execute(array($chatId, '', 'sergeykozyakov', 1500394060, '@sergeykozyakov_live'));
             return;
         }
         $stmt->execute(array($chatId, '', '', time(), ''));

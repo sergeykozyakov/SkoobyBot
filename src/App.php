@@ -26,7 +26,7 @@ class App
         return $this->logger;
     }
 
-    public function start() {
+    public function start($mode = '') {
         $logDir = Config::getLogDir();
 
         try {
@@ -45,7 +45,7 @@ class App
             return;
         }
 
-        if (isset($_GET['cron'])) {
+        if (isset($_GET['cron']) || $mode == 'cron') {
             try {
                 $sender = new Sender($this->getLogger());
                 $sender->start();

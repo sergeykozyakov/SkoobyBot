@@ -138,17 +138,18 @@ class GetVkCommand extends BaseCommand
             foreach ($posts['response']['items'] as $post) {
                 if ($post['post_type'] != 'post' || isset($post['copy_history'])) continue;
 
-                if ($this->getIsCron()) {
-                    if ($post['date'] < $vkLastUnixTime) break 2;
-                }
-
                 $postId = $post['id'];
                 $ownerId = $post['owner_id'];
                 $date = $post['date'];
                 $postText = preg_replace('/\[(.+?(?=\|))\|(.+?(?=\]))\]/', '\2', $post['text']);
 
+                if ($this->getIsCron()) {
+                    if ($date <= $vkLastUnixTime) break 2;
+                }
+
                 $needLink = false;
                 $postPhotos = array();
+                $postLinks = array();
 
                 if (isset($post['attachments'])) {
                     foreach ($post['attachments'] as $attachment) {
@@ -166,8 +167,10 @@ class GetVkCommand extends BaseCommand
 
                                 $postPhotos[] = array('text' => $attachmentText, 'url' => $attachmentUrl);
                                 break;
+                            case 'link':
+                                $attachmentUrl = $attachment['link']['url'];
+                                $postLinks[] = array('url' => $attachmentUrl);
                             default:
-                                // TODO: подумать об обработке видео, ссылок, ...
                                 $needLink = true;
                                 break;
                         }
@@ -180,6 +183,7 @@ class GetVkCommand extends BaseCommand
                     'date' => $date,
                     'text' => $postText,
                     'photos' => $postPhotos,
+                    'links' => $postLinks,
                     'needLink' => $needLink
                 );
 
@@ -210,20 +214,24 @@ class GetVkCommand extends BaseCommand
                     }
                 }
 
-                if (!$item['text'] && count($item['photos']) == 0 || $item['needLink']) {
+                if (count($item['links']) > 0) {
+                    foreach($item['links'] as $postLink) {
+                        $this->sendMessage($postLink['url'], null, false);
+                    }
+                }
+
+                if (!$item['text'] && count($item['photos']) == 0 && count($item['links']) == 0 || $item['needLink']) {
                     $isGroup = intval($item['ownerId']) < 0;
                     $ownerAbsId = abs(intval($item['ownerId']));
                     $ownerUrl = $domain ? $domain : (($isGroup ? 'club' : 'id') . $ownerAbsId);
 
-                    $fullUrl = 'https://vk.com/' . $ownerUrl . '?w=wall' . $item['ownerId'] . '_' . $item['id'];
-                    $link = '<a href="' . $fullUrl . '">' . $fullUrl . '</a>';
-
-                    $this->sendMessage($link, 'HTML', true);
+                    $link = 'https://vk.com/' . $ownerUrl . '?w=wall' . $item['ownerId'] . '_' . $item['id'];
+                    $this->sendMessage($link, null, true);
                 }
 
                 if ($this->getIsCron()) {
                     try {
-                        $this->getUser()->setVkLastUnixtime($originalChatId, $date);
+                        $this->getUser()->setVkLastUnixtime($originalChatId, $item['date']);
                     } catch (\Exception $e) {
                         $this->getLogger()->warning(
                             '(cron, chat_id: ' . $originalChatId . ') Cannot set user vk_last_unixtime to database (' . $e->getMessage() . ')'
