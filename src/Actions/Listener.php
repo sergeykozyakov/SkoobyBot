@@ -10,15 +10,10 @@ use SkoobyBot\Commands\BaseCommand;
 
 class Listener extends BaseAction
 {
-    public function getUpdates() {
-        if (!$this->getApi()) {
-            $this->getLogger()->error('Cannot receive message until Telegram API is connected!');
-            throw new \Exception('[ERROR] Cannot receive message until Telegram API is connected!');
-        }
-
+    public function start() {
         $result = $this->getApi()->getWebhookUpdates();
 
-        if (!$result->getMessage()) {
+        if (!$result || !$result->getMessage()) {
             $this->getLogger()->error('Cannot read received Telegram API message!');
             throw new \Exception('[ERROR] Cannot read received Telegram API message!');
         }

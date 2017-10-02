@@ -1,22 +1,22 @@
 <?php
 namespace SkoobyBot\Commands;
 
-use SkoobyBot\Databases\User;
+use SkoobyBot\Database;
 
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
 class BaseCommand
 {
-    protected $logger = null;
-    protected $api = null;
-    protected $user = null;
+    private $logger = null;
+    private $api = null;
+    private $database = null;
 
-    protected $isCron = false;
+    private $isCron = false;
 
-    protected $message = null;
-    protected $chatId = null;
+    private $message = null;
+    private $chatId = null;
 
-    protected $replyMarkup = null;
+    private $replyMarkup = null;
 
     public function __construct($api, $logger) {
         if (!$logger) {
@@ -30,7 +30,12 @@ class BaseCommand
         }
 
         $this->api = $api;
-        $this->user = User::getInstance();
+
+        try {
+            $this->database = Database::getInstance();
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     public function getLogger() {
@@ -41,8 +46,8 @@ class BaseCommand
         return $this->api;
     }
 
-    public function getUser() {
-        return $this->user;
+    public function getDatabase() {
+        return $this->database;
     }
 
     public function setIsCron($isCron) {
@@ -87,7 +92,12 @@ class BaseCommand
         }
 
         $response = 'Я получил твоё сообщение! Если нужна помощь, то набери /help.';
-        $this->sendMessage($response);
+
+        try {
+            $this->sendMessage($response);
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     protected function sendMessage($text, $parseMode = null, $disablePreview = null) {

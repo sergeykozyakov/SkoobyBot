@@ -7,11 +7,6 @@ use SkoobyBot\Commands\GetVkCommand;
 class Sender extends BaseAction
 {
     public function start() {
-        if (!$this->getApi()) {
-            $this->getLogger()->error('(cron) Cannot start sending messages until Telegram API is connected!');
-            throw new \Exception('[ERROR] Cannot start sending messages until Telegram API is connected!');
-        }
-
         try {
             $getVkCommand = new GetVkCommand($this->getApi(), $this->getLogger());
             $getVkCommand

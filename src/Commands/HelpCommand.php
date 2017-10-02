@@ -14,6 +14,10 @@ class HelpCommand extends BaseCommand
             'Основное назначение Skooby Bot — это /getVk. Выполнится запрос последнего поста из VK. ' .
             'В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет. Peace!';
 
-        $this->sendMessage($response);
+        try {
+            $this->sendMessage($response);
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 }

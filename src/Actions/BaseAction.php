@@ -8,8 +8,8 @@ use Telegram\Bot\Exceptions\TelegramSDKException;
 
 class BaseAction
 {
-    protected $logger = null;
-    protected $api = null;
+    private $logger = null;
+    private $api = null;
 
     public function __construct($logger) {
         if (!$logger) {
@@ -32,6 +32,8 @@ class BaseAction
             throw new \Exception('[ERROR] Telegram API connection error!');
         }
     }
+
+    public function start() {}
 
     public function getLogger() {
         return $this->logger;

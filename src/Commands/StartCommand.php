@@ -13,12 +13,11 @@ class StartCommand extends BaseCommand
         $firstName = $this->getMessage()->getChat()->getFirstName();
         $response = 'Привет, ' . $firstName . '! Я Skooby Bot. Как дела?';
 
-        $this->sendMessage($response);
-
         try {
-            $this->getUser()->addUser($this->getChatId());
+            $this->sendMessage($response);
+            $this->getDatabase()->addUser($this->getChatId());
         } catch (\Exception $e) {
-            throw new \Exception('Cannot add user to database (' . $e->getMessage() . ')');
+            throw $e;
         }
     }
 }
