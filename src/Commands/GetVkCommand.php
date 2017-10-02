@@ -58,8 +58,7 @@ class GetVkCommand extends BaseCommand
             try {
                 $rows = $this->getDatabase()->getAllUsers();
             } catch (\Exception $e) {
-                $this->getLogger()->warning('(cron) ' . $e->getMessage());
-                return;
+                throw $e;
             }
         }
 
