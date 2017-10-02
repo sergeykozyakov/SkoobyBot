@@ -87,7 +87,7 @@ class Database
     }
 
     public function getAllUsers() {
-        $sql = 'SELECT0 chat_id, bot_state, vk_wall, vk_last_unixtime, channel FROM users';
+        $sql = 'SELECT chat_id, bot_state, vk_wall, vk_last_unixtime, channel FROM users';
         $result = null;
 
         try {
