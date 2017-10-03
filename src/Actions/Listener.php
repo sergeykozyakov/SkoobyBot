@@ -18,7 +18,8 @@ class Listener extends BaseAction
         $chatId = $result->getMessage()->getChat()->getId();
 
         $keyboard = [
-            ["\xE2\x9E\xA1 Помощь"], ["\xE2\x9E\xA1 Последний пост VK"]
+            ["\xE2\x9E\x95 Добавить импорт из VK"], ["\xE2\x9C\x89 Последний пост VK"],
+            ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x94 Помощь"]
         ];
 
         $replyMarkup = $this->getApi()->replyKeyboardMarkup([
@@ -76,21 +77,28 @@ class Listener extends BaseAction
     private function getStateMap() {
         $defaultState = array(
             '/start' => 'StartCommand',
-            '/help' => 'HelpCommand',
-            "\xE2\x9E\xA1 Помощь" => 'HelpCommand',
             '/setVk' => 'SetVkCommand',
-            "\xE2\x9E\xA1 Добавить привязку к VK" => 'SetVkCommand',
+            "\xE2\x9E\x95 Добавить импорт из VK" => 'SetVkCommand',
             '/getVk' => 'GetVkCommand',
-            "\xE2\x9E\xA1 Последний пост VK" => 'GetVkCommand', 
+            "\xE2\x9C\x89 Последний пост VK" => 'GetVkCommand', 
+            '/delVk' => 'DelVkCommand',
+            "\xE2\x9D\x8C Удалить импорт из VK" => 'DelVkCommand',
+            '/help' => 'HelpCommand',
+            "\xE2\x9D\x94 Помощь" => 'HelpCommand',
             '/default' => 'DefaultCommand'
         );
 
-        $setVkMainState = $defaultState;
-        $setVkMainState['/default'] = 'SetVkCommand';
+        $setVkState = $defaultState;
+        $setVkState['/default'] = 'SetVkCommand';
+
+        $delVkState = $defaultState;
+        $delVkState['/default'] = 'DelVkCommand';
 
         $stateMap = array(
             'default' => $defaultState,
-            'set_vk_main' => $setVkMainState
+            'set_vk_main' => $setVkState,
+            'set_vk_telegram' => $setVkState,
+            'del_vk_main' => $delVkState
         );
 
         return $stateMap;

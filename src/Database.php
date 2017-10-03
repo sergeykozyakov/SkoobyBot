@@ -106,8 +106,10 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
+        $arr = array('bot_state' => $state);
+
         try {
-            $this->set('bot_state', $state, $chatId);
+            $this->set($arr, $chatId);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -118,8 +120,14 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
+        $arr = array(
+            'vk_wall' => $wallId,
+            'vk_last_unixtime' => time(),
+            'channel' => ''
+        );
+
         try {
-            $this->set('vk_wall', $wallId, $chatId);
+            $this->set($arr, $chatId);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -130,8 +138,10 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
+        $arr = array('vk_last_unixtime' => $vkLastUnixTime);
+        
         try {
-            $this->set('vk_last_unixtime', $vkLastUnixTime, $chatId);
+            $this->set($arr, $chatId);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -142,31 +152,46 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
+        $arr = array(
+            'channel' => $channel,
+            'vk_last_unixtime' => time()
+        );
+
         try {
-            $this->set('channel', $channel, $chatId);
+            $this->set($arr, $chatId);
         } catch (\Exception $e) {
             throw $e;
         }
     }
 
-    private function set($field, $param = '', $chatId) {
-        if (!$field) {
-            throw new \Exception('User field is not defined!');
-        }
-
-        if (!preg_match('/^[a-zA-Z0-9$_]+$/', $field)) {
-            throw new \Exception('User field name is forbidden!');
+    private function set($params, $chatId) {
+        if (empty($params)) {
+            throw new \Exception('User params is not defined!');
         }
 
         if (!$chatId) {
             throw new \Exception('chat_id is not defined!');
         }
 
-        $sql = 'UPDATE users SET ' . $field . ' = ? WHERE chat_id = ?';
+        $sql = 'UPDATE users SET ';
+        $namesList = array();
+        $valuesList = array();
+
+        foreach($params as $field => $param) {
+            if (!preg_match('/^[a-zA-Z0-9$_]+$/', $field)) {
+                throw new \Exception('User field name is forbidden!');
+            }
+
+            $namesList[] = $field . ' = ?';
+            $valuesList[] = $param;
+        }
+
+        $sql .= join(', ', $namesList) . ' WHERE chat_id = ?';
+        $valuesList[] = $chatId;
 
         try {
             $stmt = $this->db->prepare($sql);
-            $stmt->execute(array($param, $chatId));
+            $stmt->execute($valuesList);
         } catch (\Exception $e) {
             throw new \Exception('Cannot set user ' . $field . ' to database!  (' . $e->getMessage() . ')');
         }

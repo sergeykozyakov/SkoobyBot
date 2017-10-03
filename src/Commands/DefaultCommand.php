@@ -10,7 +10,7 @@ class DefaultCommand extends BaseCommand
             throw new \Exception('Telegram API message is not defined!');
         }
 
-        $response = 'Я получил твоё сообщение! Если нужна помощь, то набери /help.';
+        $response = "Спасибо, что решил пообщаться со мной \xF0\x9F\x98\x8A! Если нужна помощь, то набери /help.";
 
         try {
             $this->sendMessage($response);
