@@ -51,15 +51,7 @@ class GetVkCommand extends BaseCommand
             try {
                 $rows[] = $this->getDatabase()->getUser($this->getChatId());
             } catch (\Exception $e) {
-                $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') ' . $e->getMessage());
-                $response = 'Не могу получить информацию о тебе! Попробуй позже.';
-
-                try {
-                    $this->sendMessage($response);
-                } catch (\Exception $e) {
-                    throw $e;
-                }
-                return;
+                throw $e;
             }
         }
         else {
@@ -82,10 +74,12 @@ class GetVkCommand extends BaseCommand
     }
 
     private function readWall($row, $vkAppId, $vkSecret, $vkToken) {
-        if (!$row || !isset($row['vk_wall']) || !isset($row['channel']) || !isset($row['vk_last_unixtime'])) {
+        if (empty($row) || !$row['vk_wall'] || !$row['channel'] || !$row['vk_last_unixtime']) {
             if (!$this->getIsCron()) {
-                $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No user information was specified!');
-                $response = 'Не могу получить информацию о твоих привязках к VK!';
+                $this->getLogger()->warning(
+                    '(chat_id: ' . $this->getChatId() . ') No user VK import information was specified!'
+                );
+                $response = 'У тебя ещё не настроен импорт из VK!';
 
                 try {
                     $this->sendMessage($response);
@@ -147,8 +141,8 @@ class GetVkCommand extends BaseCommand
                         '(chat_id: ' . $this->getChatId() . ', vk_wall: ' . $vkWall . ') Cannot read received VK API response!'
                     );
 
-                    $response = 'Не могу получить посты из VK! ' .
-                        'Такое бывает, если у пользователя закрыта стена или удалена страница, попробуй потом ещё раз.';
+                    $response = 'Не могу получить пост из VK! Такое бывает, если у пользователя закрыта стена ' .
+                        'или удалена страница. Попробуй потом ещё раз.';
                     
                     try {
                         $this->sendMessage($response);
@@ -261,11 +255,7 @@ class GetVkCommand extends BaseCommand
                 }
 
                 if ($this->getIsCron()) {
-                    try {
-                        $this->getDatabase()->setVkLastUnixtime($originalChatId, $item['date']);
-                    } catch (\Exception $e) {
-                        $this->getLogger()->warning('(cron, chat_id: ' . $originalChatId . ') ' . $e->getMessage());
-                    }
+                    $this->getDatabase()->setVkLastUnixtime($originalChatId, $item['date']);
                 }
             } catch (\Exception $e) {
                 if (!$this->getIsCron()) {

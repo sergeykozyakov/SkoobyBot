@@ -9,7 +9,7 @@ class Listener extends BaseAction
     public function start() {
         $result = $this->getApi()->getWebhookUpdates();
 
-        if (!$result || !$result->getMessage()) {
+        if (!$result->getMessage()) {
             $this->getLogger()->error('Cannot read received Telegram API message!');
             throw new \Exception('[ERROR] Cannot read received Telegram API message!');
         }
