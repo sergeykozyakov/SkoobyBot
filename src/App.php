@@ -41,15 +41,15 @@ class App
             $db = Database::getInstance();
             $db->init();
         } catch (\Exception $e) {
-            $this->getLogger()->error($e->getMessage());
+            $this->logger->error($e->getMessage());
 
-            echo "Database connection problems occured:\n" . $e->getMessage();
+            echo "Database connection problems occured:\n[ERROR] " . $e->getMessage();
             return;
         }
 
         if (isset($_GET['cron']) || $mode == 'cron') {
             try {
-                $sender = new Sender($this->getLogger());
+                $sender = new Sender($this->logger);
                 $sender->start();
             } catch (\Exception $e) {
                 echo "Telegram API Sender problems occured:\n" . $e->getMessage();
@@ -57,7 +57,7 @@ class App
         }
         else {
             try {
-                $listener = new Listener($this->getLogger());
+                $listener = new Listener($this->logger);
                 $listener->start();
             } catch (\Exception $e) {
                 echo "Telegram API Listener problems occured:\n" . $e->getMessage();

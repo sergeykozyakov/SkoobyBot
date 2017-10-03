@@ -87,7 +87,7 @@ class BaseCommand
     }
 
     public function start() {
-        if (!$this->getMessage()) {
+        if (!$this->message) {
             throw new \Exception('Telegram API message is not defined!');
         }
 
@@ -101,15 +101,15 @@ class BaseCommand
     }
 
     protected function sendMessage($text, $parseMode = null, $disablePreview = null) {
-        if (!$this->getChatId()) {
+        if (!$this->chatId) {
             throw new \Exception('Telegram API chat_id is not defined!');
         }
 
         try {
-            $this->getApi()->sendMessage([
-                'chat_id' => $this->getChatId(),
+            $this->api->sendMessage([
+                'chat_id' => $this->chatId,
                 'text' => $text,
-                'reply_markup' => $this->getReplyMarkup(),
+                'reply_markup' => $this->replyMarkup,
                 'parse_mode' => $parseMode,
                 'disable_web_page_preview' => $disablePreview
             ]);
@@ -119,13 +119,13 @@ class BaseCommand
     }
 
     protected function sendPhoto($photo, $caption = null) {
-        if (!$this->getChatId()) {
+        if (!$this->chatId) {
             throw new \Exception('Telegram API chat_id is not defined!');
         }
 
         try {
-            $this->getApi()->sendPhoto([
-                'chat_id' => $this->getChatId(),
+            $this->api->sendPhoto([
+                'chat_id' => $this->chatId,
                 'photo' => $photo,
                 'caption' => $caption
             ]);

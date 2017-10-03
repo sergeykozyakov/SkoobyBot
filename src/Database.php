@@ -34,7 +34,7 @@ class Database
         )';
 
         try {
-            $stmt = $this->getDb()->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->execute();
         } catch (\Exception $e) {
             throw new \Exception('Database table init error! (' . $e->getMessage() . ')');
@@ -60,7 +60,7 @@ class Database
             VALUES (NULL, ?, ?, ?, ?, ?)';
 
         try {
-            $stmt = $this->getDb()->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->execute(array($chatId, '', '', time(), ''));
         } catch (\Exception $e) {
             throw new \Exception('Cannot add user to database! (' . $e->getMessage() . ')');
@@ -76,7 +76,7 @@ class Database
         $result = null;
 
         try {
-            $stmt = $this->getDb()->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->execute(array($chatId));
             $result = $stmt->fetch();
         } catch (\Exception $e) {
@@ -91,7 +91,7 @@ class Database
         $result = null;
 
         try {
-            $stmt = $this->getDb()->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->execute();
             $result = $stmt->fetchAll();
         } catch (\Exception $e) {
@@ -106,7 +106,7 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
-        if (!$state) {
+        if ($state == null) {
             throw new \Exception('state is not defined!');
         }
 
@@ -122,7 +122,7 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
-        if (!$wallId) {
+        if ($wallId == null) {
             throw new \Exception('wall_id is not defined!');
         }
 
@@ -138,7 +138,7 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
-        if (!$vkLastUnixTime) {
+        if ($vkLastUnixTime == null) {
             throw new \Exception('vk_last_unix_time is not defined!');
         }
 
@@ -154,7 +154,7 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
-        if (!$channel) {
+        if ($channel == null) {
             throw new \Exception('channel is not defined!');
         }
 
@@ -166,7 +166,7 @@ class Database
     }
 
     private function set($field, $param, $chatId) {
-        if (!$field || !$param) {
+        if (!$field || $param == null) {
             throw new \Exception('User field or value is not defined!');
         }
 
@@ -181,7 +181,7 @@ class Database
         $sql = 'UPDATE users SET ' . $field . ' = ? WHERE chat_id = ?';
 
         try {
-            $stmt = $this->getDb()->prepare($sql);
+            $stmt = $this->db->prepare($sql);
             $stmt->execute(array($param, $chatId));
         } catch (\Exception $e) {
             throw new \Exception('Cannot set user ' . $field . ' to database!  (' . $e->getMessage() . ')');

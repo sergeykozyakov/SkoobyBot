@@ -20,7 +20,7 @@ class BaseAction
         $token = Config::getTelegramToken();
 
         if (!$token) {
-            $this->getLogger()->error('No Telegram API token was specified!');
+            $this->logger->error('No Telegram API token was specified!');
             throw new \Exception('[ERROR] No Telegram API token was specified!');
         }
 
@@ -28,7 +28,7 @@ class BaseAction
             $api = new Api($token);
             $this->api = $api;
         } catch (TelegramSDKException $e) {
-            $this->getLogger()->error('Telegram API connection error! ' . $e->getMessage());
+            $this->logger->error('Telegram API connection error! ' . $e->getMessage());
             throw new \Exception('[ERROR] Telegram API connection error!');
         }
     }
