@@ -17,15 +17,15 @@ class DelVkCommand extends BaseCommand
             $state = $this->getBotState();
             $text = $this->getMessage()->getText();
 
-            if ($state == 'default') {
-                $this->sendMessage($response);
-                $this->getDatabase()->setBotState($this->getChatId(), 'del_vk_main');
-            }
-            else if ($state == 'del_vk_main') {
+            if ($state == 'del_vk_main') {
                 $this->sendMessage($responseMain);
 
                 $this->getDatabase()->setVkWall($this->getChatId(), '');
                 $this->getDatabase()->setBotState($this->getChatId(), 'default');
+            }
+            else {
+                $this->sendMessage($response);
+                $this->getDatabase()->setBotState($this->getChatId(), 'del_vk_main');
             }
         } catch (\Exception $e) {
             throw $e;

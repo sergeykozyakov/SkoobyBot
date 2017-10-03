@@ -32,11 +32,7 @@ class SetVkCommand extends BaseCommand
             $state = $this->getBotState();
             $text = $this->getMessage()->getText();
 
-            if ($state == 'default') {
-                $this->sendMessage($response, null, true);
-                $this->getDatabase()->setBotState($this->getChatId(), 'set_vk_main');
-            }
-            else if ($state == 'set_vk_main') {
+            if ($state == 'set_vk_main') {
                 if (!preg_match('/^[a-zA-Z0-9_]+$/', $text)) {
                     $this->sendMessage($responseFailed);
                     return;
@@ -57,6 +53,10 @@ class SetVkCommand extends BaseCommand
 
                 $this->getDatabase()->setChannel($this->getChatId(), $text);
                 $this->getDatabase()->setBotState($this->getChatId(), 'default');
+            }
+            else {
+                $this->sendMessage($response, null, true);
+                $this->getDatabase()->setBotState($this->getChatId(), 'set_vk_main');
             }
         } catch (\Exception $e) {
             throw $e;
