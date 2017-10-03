@@ -22,15 +22,10 @@ class DelVkCommand extends BaseCommand
                 $this->getDatabase()->setBotState($this->getChatId(), 'del_vk_main');
             }
             else if ($state == 'del_vk_main') {
-                if (!preg_match('/^[a-zA-Z0-9_]+$/', $text)) {
-                    $this->sendMessage($responseFailed);
-                    return;
-                }
-
                 $this->sendMessage($responseMain);
 
                 $this->getDatabase()->setVkWall($this->getChatId(), '');
-                $this->getDatabase()->setBotState($this->getChatId(), 'set_vk_telegram');
+                $this->getDatabase()->setBotState($this->getChatId(), 'default');
             }
         } catch (\Exception $e) {
             throw $e;

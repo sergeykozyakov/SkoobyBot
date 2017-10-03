@@ -18,8 +18,8 @@ class Listener extends BaseAction
         $chatId = $result->getMessage()->getChat()->getId();
 
         $keyboard = [
-            ["\xE2\x9E\x95 Добавить импорт из VK"], ["\xE2\x9C\x89 Последний пост VK"],
-            ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x94 Помощь"]
+            ["\xE2\x9E\x95 Добавить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
+            ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"]
         ];
 
         $replyMarkup = $this->getApi()->replyKeyboardMarkup([
@@ -80,11 +80,11 @@ class Listener extends BaseAction
             '/setVk' => 'SetVkCommand',
             "\xE2\x9E\x95 Добавить импорт из VK" => 'SetVkCommand',
             '/getVk' => 'GetVkCommand',
-            "\xE2\x9C\x89 Последний пост VK" => 'GetVkCommand', 
+            "\xE2\x98\x95 Последний пост VK" => 'GetVkCommand', 
             '/delVk' => 'DelVkCommand',
             "\xE2\x9D\x8C Удалить импорт из VK" => 'DelVkCommand',
             '/help' => 'HelpCommand',
-            "\xE2\x9D\x94 Помощь" => 'HelpCommand',
+            "\xE2\x9D\x93 Помощь" => 'HelpCommand',
             '/default' => 'DefaultCommand'
         );
 
