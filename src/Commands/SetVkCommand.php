@@ -17,12 +17,12 @@ class SetVkCommand extends BaseCommand
             '(например vk.com/id123456 или vk.com/club987654), то напиши мне только цифры. Но внимание! '.
             'Если хочешь делать импорт из группы, то перед цифрами обязательно поставь знак минус.';
 
-        $responseLogin = 'Спасибо! Теперь убедись, что у тебя создан Telegram канал и у твоего канала ' .
+        $responseMain = 'Спасибо! Теперь убедись, что у тебя создан Telegram канал и у твоего канала ' .
             "задано имя вида @channel_name.\n\nВсё в порядке? Теперь очень важно! Тебе нужно добавить меня " .
             "в качестве ещё одного админа твоего канала (меня можно найти как @skooby_bot).\n\n" .
             'Ну всё, теперь окончательное действие — напиши мне имя своего канала (начни с символа @).';
 
-        $responseLoginFailed = 'Ты мне прислал что-то не то! Попробуй ещё раз.';
+        $responseMainFailed = 'Ты мне прислал что-то не то! Попробуй ещё раз.';
 
         try {
             $state = $this->getBotState();
@@ -30,17 +30,17 @@ class SetVkCommand extends BaseCommand
 
             if ($state == 'default') {
                 $this->sendMessage($response);
-                $this->getDatabase()->setBotState($this->getChatId(), 'set_vk_login');
+                $this->getDatabase()->setBotState($this->getChatId(), 'set_vk_main');
             }
-            else if ($state == 'set_vk_login') {
+            else if ($state == 'set_vk_main') {
                 $newState = 'default';
                 if (!$text) {
-                    $responseLogin = $responseLoginFailed;
-                    $newState = 'set_vk_login';
+                    $responseMain = $responseMainFailed;
+                    $newState = 'set_vk_main';
                     return;
                 }
 
-                $this->sendMessage($responseLogin);
+                $this->sendMessage($responseMain);
 
                 $this->getDatabase()->setVkWall($this->getChatId(), $text);
                 $this->getDatabase()->setBotState($this->getChatId(), $newState);

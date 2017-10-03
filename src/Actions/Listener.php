@@ -90,7 +90,7 @@ class Listener extends BaseAction
 
         $stateMap = array(
             'default' => $defaultState,
-            'set_vk_login' => $setVkMainState
+            'set_vk_main' => $setVkMainState
         );
 
         return $stateMap;
