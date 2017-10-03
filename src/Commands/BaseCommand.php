@@ -95,6 +95,7 @@ class BaseCommand
 
         try {
             $this->sendMessage($response);
+            $this->database->setBotState($this->chatId, '');
         } catch (\Exception $e) {
             throw $e;
         }

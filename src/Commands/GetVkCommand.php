@@ -17,6 +17,14 @@ class GetVkCommand extends BaseCommand
             throw new \Exception('Telegram API message is not defined!');
         }
 
+        if (!$this->getIsCron()) {
+            try {
+                $this->getDatabase()->setBotState($this->getChatId(), '');
+            } catch (\Exception $e) {
+                throw $e;
+            }
+        }
+
         $vkAppId = Config::getVkAppId();
         $vkSecret = Config::getVkSecret();
         $vkToken = Config::getVkToken();

@@ -3,10 +3,10 @@ namespace SkoobyBot\Commands;
 
 use SkoobyBot\Commands\BaseCommand;
 
-class StartCommand extends BaseCommand
+class DelVkCommand extends BaseCommand
 {
     public function start() {
-        if (!$this->getMessage()) {
+        /*if (!$this->getMessage()) {
             throw new \Exception('Telegram API message is not defined!');
         }
 
@@ -16,10 +16,10 @@ class StartCommand extends BaseCommand
         try {
             $this->sendMessage($response);
 
-            $this->getDatabase()->setBotState($this->getChatId(), '');
+            $this->getDatabase()->setBotState($this->getChatId(), 'del_vk_main');
             $this->getDatabase()->addUser($this->getChatId());
         } catch (\Exception $e) {
             throw $e;
-        }
+        }*/
     }
 }

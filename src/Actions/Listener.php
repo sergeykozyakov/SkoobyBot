@@ -5,6 +5,7 @@ use SkoobyBot\Actions\BaseAction;
 
 use SkoobyBot\Commands\StartCommand;
 use SkoobyBot\Commands\HelpCommand;
+use SkoobyBot\Commands\SetVkCommand;
 use SkoobyBot\Commands\GetVkCommand;
 use SkoobyBot\Commands\BaseCommand;
 
@@ -55,6 +56,20 @@ class Listener extends BaseAction
                         '(chat_id: ' . $chatId . ') Cannot execute bot /help command: ' . $e->getMessage()
                     );
                     throw new \Exception('[ERROR] Cannot execute bot /help command: ' . $e->getMessage());
+                }
+                break;
+            case '/setVk':
+            case "\xE2\x9E\xA1 Добавить привязку к VK":
+                try {
+                    $setVkCommand = new SetVkCommand($this->getApi(), $this->getLogger());
+                    $setVkCommand
+                        ->setMessage($result->getMessage())
+                        ->start();
+                } catch (\Exception $e) {
+                    $this->getLogger()->error(
+                        '(chat_id: ' . $chatId . ') Cannot execute bot /setVk command: ' . $e->getMessage()
+                    );
+                    throw new \Exception('[ERROR] Cannot execute bot /setVk command: ' . $e->getMessage());
                 }
                 break;
             case '/getVk':
