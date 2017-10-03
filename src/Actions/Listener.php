@@ -2,12 +2,7 @@
 namespace SkoobyBot\Actions;
 
 use SkoobyBot\Actions\BaseAction;
-
-use SkoobyBot\Commands\StartCommand;
-use SkoobyBot\Commands\HelpCommand;
-use SkoobyBot\Commands\SetVkCommand;
-use SkoobyBot\Commands\GetVkCommand;
-use SkoobyBot\Commands\BaseCommand;
+use SkoobyBot\Commands\CommandFactory;
 
 class Listener extends BaseAction
 {
@@ -22,83 +17,82 @@ class Listener extends BaseAction
         $text = $result->getMessage()->getText();
         $chatId = $result->getMessage()->getChat()->getId();
 
-        switch ($text) {
-            case '/start':
-                $keyboard = [["\xE2\x9E\xA1 Помощь"], ["\xE2\x9E\xA1 Последний пост VK"]];
-                $replyMarkup = $this->getApi()->replyKeyboardMarkup([
-                    'keyboard' => $keyboard,
-                    'resize_keyboard' => true,
-                    'one_time_keyboard' => false
-                ]);
+        $keyboard = [
+            ["\xE2\x9E\xA1 Помощь"], ["\xE2\x9E\xA1 Последний пост VK"]
+        ];
 
-                try {
-                    $startCommand = new StartCommand($this->getApi(), $this->getLogger());
-                    $startCommand
-                        ->setMessage($result->getMessage())
-                        ->setReplyMarkup($replyMarkup)
-                        ->start();
-                } catch (\Exception $e) {
-                    $this->getLogger()->error(
-                        '(chat_id: ' . $chatId . ') Cannot execute bot /start command: ' . $e->getMessage()
-                    );
-                    throw new \Exception('[ERROR] Cannot execute bot /start command: ' . $e->getMessage());
-                }
-                break;
-            case '/help':
-            case "\xE2\x9E\xA1 Помощь":
-                try {
-                    $helpCommand = new HelpCommand($this->getApi(), $this->getLogger());
-                    $helpCommand
-                        ->setMessage($result->getMessage())
-                        ->start();
-                } catch (\Exception $e) {
-                    $this->getLogger()->error(
-                        '(chat_id: ' . $chatId . ') Cannot execute bot /help command: ' . $e->getMessage()
-                    );
-                    throw new \Exception('[ERROR] Cannot execute bot /help command: ' . $e->getMessage());
-                }
-                break;
-            case '/setVk':
-            case "\xE2\x9E\xA1 Добавить привязку к VK":
-                try {
-                    $setVkCommand = new SetVkCommand($this->getApi(), $this->getLogger());
-                    $setVkCommand
-                        ->setMessage($result->getMessage())
-                        ->start();
-                } catch (\Exception $e) {
-                    $this->getLogger()->error(
-                        '(chat_id: ' . $chatId . ') Cannot execute bot /setVk command: ' . $e->getMessage()
-                    );
-                    throw new \Exception('[ERROR] Cannot execute bot /setVk command: ' . $e->getMessage());
-                }
-                break;
-            case '/getVk':
-            case "\xE2\x9E\xA1 Последний пост VK":
-                try {
-                    $getVkCommand = new GetVkCommand($this->getApi(), $this->getLogger());
-                    $getVkCommand
-                        ->setMessage($result->getMessage())
-                        ->start();
-                } catch (\Exception $e) {
-                    $this->getLogger()->error(
-                        '(chat_id: ' . $chatId . ') Cannot execute bot /getVk command: ' . $e->getMessage()
-                    );
-                    throw new \Exception('[ERROR] Cannot execute bot /getVk command: ' . $e->getMessage());
-                }
-                break;
-            default:
-                try {
-                    $defaultCommand = new BaseCommand($this->getApi(), $this->getLogger());
-                    $defaultCommand
-                        ->setMessage($result->getMessage())
-                        ->start();
-                } catch (\Exception $e) {
-                    $this->getLogger()->error(
-                        '(chat_id: ' . $chatId . ') Cannot execute bot default command: ' . $e->getMessage()
-                    );
-                    throw new \Exception('[ERROR] Cannot execute bot default command: ' . $e->getMessage());
-                }
-                break;
+        $replyMarkup = $this->getApi()->replyKeyboardMarkup([
+            'keyboard' => $keyboard,
+            'resize_keyboard' => true,
+            'one_time_keyboard' => false
+        ]);
+
+        $botState = '';
+
+        try {
+            $user = $this->getDatabase()->getUser($chatId);
+            $botState = (isset($user['bot_state']) && $user['bot_state']) ? $user['bot_state'] : 'default';
+        } catch (\Exception $e) {
+            $this->getLogger()->error('(chat_id: ' . $chatId . ') ' . $e->getMessage());
+            throw new \Exception('[ERROR] ' . $e->getMessage());
         }
+
+        $stateMap = $this->getStateMap();
+
+        if (!isset($stateMap[$botState])) {
+            $this->getLogger()->error(
+                '(chat_id: ' . $chatId . ') State ' . $botState . ' not found!'
+            );
+            throw new \Exception('[ERROR] State ' . $botState . ' not found!');
+        }
+
+        $foundState = $stateMap[$botState];
+        $action = $text;
+
+        if (!isset($foundState[$action])) {
+            if (!isset($foundState['/default'])) {
+                $this->getLogger()->error(
+                    '(chat_id: ' . $chatId . ') State ' . $botState . ' command ' . $action . ' not found!'
+                );
+                throw new \Exception('[ERROR] State ' . $botState . ' command ' . $action . ' not found!');
+            }
+            $action = '/default';
+        }
+
+        try {
+            $command = CommandFactory::get($foundState[$action], $this->getApi(), $this->getLogger());
+            $command
+                ->setMessage($result->getMessage())
+                ->setReplyMarkup($action == '/start' ? $replyMarkup : null)
+                ->start();
+        } catch (\Exception $e) {
+            $this->getLogger()->error(
+                '(chat_id: ' . $chatId . ') Cannot execute bot ' . $action . ' command: ' . $e->getMessage()
+            );
+            throw new \Exception('[ERROR] Cannot execute bot ' . $action . ' command: ' . $e->getMessage());
+        }
+    }
+
+    private function getStateMap() {
+        $defaultState = array(
+            '/start' => 'StartCommand',
+            '/help' => 'HelpCommand',
+            "\xE2\x9E\xA1 Помощь" => 'HelpCommand',
+            '/setVk' => 'SetVkCommand',
+            "\xE2\x9E\xA1 Добавить привязку к VK" => 'SetVkCommand',
+            '/getVk' => 'GetVkCommand',
+            "\xE2\x9E\xA1 Последний пост VK" => 'GetVkCommand', 
+            '/default' => 'DefaultCommand'
+        );
+
+        $setVkMainState = $defaultState;
+        $setVkMainState['/default'] = 'SetVkCommand';
+
+        $stateMap = array(
+            'default' => $defaultState,
+            'set_vk_login' => $setVkMainState
+        );
+
+        return $stateMap;
     }
 }

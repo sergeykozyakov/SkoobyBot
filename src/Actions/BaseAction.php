@@ -2,14 +2,16 @@
 namespace SkoobyBot\Actions;
 
 use SkoobyBot\Config;
+use SkoobyBot\Database;
 
 use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
-class BaseAction
+abstract class BaseAction
 {
     private $logger = null;
     private $api = null;
+    private $database = null;
 
     public function __construct($logger) {
         if (!$logger) {
@@ -31,9 +33,15 @@ class BaseAction
             $this->logger->error('Telegram API connection error! ' . $e->getMessage());
             throw new \Exception('[ERROR] Telegram API connection error!');
         }
+
+        try {
+            $this->database = Database::getInstance();
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
-    public function start() {}
+    abstract public function start();
 
     public function getLogger() {
         return $this->logger;
@@ -41,5 +49,9 @@ class BaseAction
 
     public function getApi() {
         return $this->api;
+    }
+
+    public function getDatabase() {
+        return $this->database;
     }
 }

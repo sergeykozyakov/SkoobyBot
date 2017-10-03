@@ -11,13 +11,13 @@ class HelpCommand extends BaseCommand
         }
 
         $response = 'Смотри, основные команды — это /start и /help. На всякий случай, твой код чата — ' . $this->getChatId() . '. ' .
-            'Основное назначение Skooby Bot — это /addVk, /getVk, /delVk. Выполнится привязка к VK, ' .
+            'Основное назначение Skooby Bot — это /setVk, /getVk, /delVk. Выполнится привязка к VK, ' .
             'запрос последнего поста из VK, и отвязка от VK. ' .
             'В принципе, можно любой текст и картинку мне отправить. Увидишь, что будет.';
 
         try {
             $this->sendMessage($response);
-            $this->getDatabase()->setBotState($this->getChatId(), '');
+            $this->getDatabase()->setBotState($this->getChatId(), 'default');
         } catch (\Exception $e) {
             throw $e;
         }

@@ -3,21 +3,18 @@ namespace SkoobyBot\Commands;
 
 use SkoobyBot\Commands\BaseCommand;
 
-class StartCommand extends BaseCommand
+class DefaultCommand extends BaseCommand
 {
     public function start() {
         if (!$this->getMessage()) {
             throw new \Exception('Telegram API message is not defined!');
         }
 
-        $firstName = $this->getMessage()->getChat()->getFirstName();
-        $response = 'Привет, ' . $firstName . '! Я Skooby Bot. Как дела?';
+        $response = 'Я получил твоё сообщение! Если нужна помощь, то набери /help.';
 
         try {
             $this->sendMessage($response);
-
-            $this->getDatabase()->setBotState($this->getChatId(), 'default');
-            $this->getDatabase()->addUser($this->getChatId());
+            $this->database->setBotState($this->getChatId(), 'default');
         } catch (\Exception $e) {
             throw $e;
         }

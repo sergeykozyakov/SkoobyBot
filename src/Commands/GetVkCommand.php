@@ -19,7 +19,7 @@ class GetVkCommand extends BaseCommand
 
         if (!$this->getIsCron()) {
             try {
-                $this->getDatabase()->setBotState($this->getChatId(), '');
+                $this->getDatabase()->setBotState($this->getChatId(), 'default');
             } catch (\Exception $e) {
                 throw $e;
             }

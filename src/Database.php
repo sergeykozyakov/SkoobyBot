@@ -61,7 +61,7 @@ class Database
 
         try {
             $stmt = $this->db->prepare($sql);
-            $stmt->execute(array($chatId, '', '', time(), ''));
+            $stmt->execute(array($chatId, 'default', '', time(), ''));
         } catch (\Exception $e) {
             throw new \Exception('Cannot add user to database! (' . $e->getMessage() . ')');
         }
@@ -101,13 +101,9 @@ class Database
         return $result;
     }
 
-    public function setBotState($chatId, $state) {
+    public function setBotState($chatId, $state = '') {
         if (!$chatId) {
             throw new \Exception('chat_id is not defined!');
-        }
-
-        if ($state == null) {
-            throw new \Exception('state is not defined!');
         }
 
         try {
@@ -117,13 +113,9 @@ class Database
         }
     }
 
-    public function setVkWall($chatId, $wallId) {
+    public function setVkWall($chatId, $wallId = '') {
         if (!$chatId) {
             throw new \Exception('chat_id is not defined!');
-        }
-
-        if ($wallId == null) {
-            throw new \Exception('wall_id is not defined!');
         }
 
         try {
@@ -133,13 +125,9 @@ class Database
         }
     }
 
-    public function setVkLastUnixtime($chatId, $vkLastUnixTime) {
+    public function setVkLastUnixtime($chatId, $vkLastUnixTime = '') {
         if (!$chatId) {
             throw new \Exception('chat_id is not defined!');
-        }
-
-        if ($vkLastUnixTime == null) {
-            throw new \Exception('vk_last_unix_time is not defined!');
         }
 
         try {
@@ -149,13 +137,9 @@ class Database
         }
     }
 
-    public function setChannel($chatId, $channel) {
+    public function setChannel($chatId, $channel = '') {
         if (!$chatId) {
             throw new \Exception('chat_id is not defined!');
-        }
-
-        if ($channel == null) {
-            throw new \Exception('channel is not defined!');
         }
 
         try {
@@ -165,9 +149,9 @@ class Database
         }
     }
 
-    private function set($field, $param, $chatId) {
-        if (!$field || $param == null) {
-            throw new \Exception('User field or value is not defined!');
+    private function set($field, $param = '', $chatId) {
+        if (!$field) {
+            throw new \Exception('User field is not defined!');
         }
 
         if (!preg_match('/^[a-zA-Z0-9$_]+$/', $field)) {

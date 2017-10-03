@@ -5,7 +5,7 @@ use SkoobyBot\Database;
 
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
-class BaseCommand
+abstract class BaseCommand
 {
     private $logger = null;
     private $api = null;
@@ -37,6 +37,8 @@ class BaseCommand
             throw $e;
         }
     }
+
+    abstract public function start();
 
     public function getLogger() {
         return $this->logger;
@@ -86,19 +88,20 @@ class BaseCommand
         return $this->replyMarkup;
     }
 
-    public function start() {
-        if (!$this->message) {
-            throw new \Exception('Telegram API message is not defined!');
+    protected function getBotState() {
+        if (!$this->chatId) {
+            throw new \Exception('Telegram API chat_id is not defined!');
         }
 
-        $response = 'Я получил твоё сообщение! Если нужна помощь, то набери /help.';
-
+        $botState = '';
         try {
-            $this->sendMessage($response);
-            $this->database->setBotState($this->chatId, '');
+            $user = $this->database->getUser($this->chatId);
+            $botState = (isset($user['bot_state']) && $user['bot_state']) ? $user['bot_state'] : 'default';
         } catch (\Exception $e) {
-            throw $e;
+            throw new \Exception('Cannot get user bot_state! (' . $e->getMessage() . ')');
         }
+
+        return $botState;
     }
 
     protected function sendMessage($text, $parseMode = null, $disablePreview = null) {
