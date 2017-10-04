@@ -1,22 +1,22 @@
 <?php
 namespace SkoobyBot\Commands;
 
-use SkoobyBot\Databases\User;
+use SkoobyBot\Database;
 
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
-class BaseCommand
+abstract class BaseCommand
 {
-    protected $logger = null;
-    protected $api = null;
-    protected $user = null;
+    private $logger = null;
+    private $api = null;
+    private $database = null;
 
-    protected $isCron = false;
+    private $isCron = false;
 
-    protected $message = null;
-    protected $chatId = null;
+    private $message = null;
+    private $chatId = null;
 
-    protected $replyMarkup = null;
+    private $replyMarkup = null;
 
     public function __construct($api, $logger) {
         if (!$logger) {
@@ -30,8 +30,15 @@ class BaseCommand
         }
 
         $this->api = $api;
-        $this->user = User::getInstance();
+
+        try {
+            $this->database = Database::getInstance();
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
+
+    abstract public function start();
 
     public function getLogger() {
         return $this->logger;
@@ -41,8 +48,8 @@ class BaseCommand
         return $this->api;
     }
 
-    public function getUser() {
-        return $this->user;
+    public function getDatabase() {
+        return $this->database;
     }
 
     public function setIsCron($isCron) {
@@ -81,25 +88,32 @@ class BaseCommand
         return $this->replyMarkup;
     }
 
-    public function start() {
-        if (!$this->getMessage()) {
-            throw new \Exception('Telegram API message is not defined!');
+    protected function getBotState() {
+        if (!$this->chatId) {
+            throw new \Exception('Telegram API chat_id is not defined!');
         }
 
-        $response = 'Я получил твоё сообщение! Если нужна помощь, то набери /help.';
-        $this->sendMessage($response);
+        $botState = '';
+        try {
+            $user = $this->database->getUser($this->chatId);
+            $botState = (isset($user['bot_state']) && $user['bot_state']) ? $user['bot_state'] : 'default';
+        } catch (\Exception $e) {
+            throw new \Exception('Cannot get user bot_state! (' . $e->getMessage() . ')');
+        }
+
+        return $botState;
     }
 
     protected function sendMessage($text, $parseMode = null, $disablePreview = null) {
-        if (!$this->getChatId()) {
+        if (!$this->chatId) {
             throw new \Exception('Telegram API chat_id is not defined!');
         }
 
         try {
-            $this->getApi()->sendMessage([
-                'chat_id' => $this->getChatId(),
+            $this->api->sendMessage([
+                'chat_id' => $this->chatId,
                 'text' => $text,
-                'reply_markup' => $this->getReplyMarkup(),
+                'reply_markup' => $this->replyMarkup,
                 'parse_mode' => $parseMode,
                 'disable_web_page_preview' => $disablePreview
             ]);
@@ -109,13 +123,13 @@ class BaseCommand
     }
 
     protected function sendPhoto($photo, $caption = null) {
-        if (!$this->getChatId()) {
+        if (!$this->chatId) {
             throw new \Exception('Telegram API chat_id is not defined!');
         }
 
         try {
-            $this->getApi()->sendPhoto([
-                'chat_id' => $this->getChatId(),
+            $this->api->sendPhoto([
+                'chat_id' => $this->chatId,
                 'photo' => $photo,
                 'caption' => $caption
             ]);

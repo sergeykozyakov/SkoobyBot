@@ -2,7 +2,7 @@
 namespace SkoobyBot;
 
 use SkoobyBot\Config;
-use SkoobyBot\Databases\User;
+use SkoobyBot\Database;
 
 use SkoobyBot\Actions\Sender;
 use SkoobyBot\Actions\Listener;
@@ -12,7 +12,7 @@ use Psr\Log\LogLevel;
 
 class App
 {
-    protected $logger = null;
+    private $logger = null;
     private static $instance = null;
 
     public static function getInstance() {
@@ -38,16 +38,18 @@ class App
         }
 
         try {
-            $user = User::getInstance($this->getLogger());
-            $user->init();
+            $db = Database::getInstance();
+            $db->init();
         } catch (\Exception $e) {
-            echo "Database connection problems occured:\n" . $e->getMessage();
+            $this->logger->error($e->getMessage());
+
+            echo "Database connection problems occured:\n[ERROR] " . $e->getMessage();
             return;
         }
 
         if (isset($_GET['cron']) || $mode == 'cron') {
             try {
-                $sender = new Sender($this->getLogger());
+                $sender = new Sender($this->logger);
                 $sender->start();
             } catch (\Exception $e) {
                 echo "Telegram API Sender problems occured:\n" . $e->getMessage();
@@ -55,8 +57,8 @@ class App
         }
         else {
             try {
-                $listener = new Listener($this->getLogger());
-                $listener->getUpdates();
+                $listener = new Listener($this->logger);
+                $listener->start();
             } catch (\Exception $e) {
                 echo "Telegram API Listener problems occured:\n" . $e->getMessage();
             }

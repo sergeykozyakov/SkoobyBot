@@ -2,20 +2,11 @@
 namespace SkoobyBot\Actions;
 
 use SkoobyBot\Actions\BaseAction;
-
-use SkoobyBot\Commands\StartCommand;
-use SkoobyBot\Commands\HelpCommand;
-use SkoobyBot\Commands\GetVkCommand;
-use SkoobyBot\Commands\BaseCommand;
+use SkoobyBot\Commands\CommandFactory;
 
 class Listener extends BaseAction
 {
-    public function getUpdates() {
-        if (!$this->getApi()) {
-            $this->getLogger()->error('Cannot receive message until Telegram API is connected!');
-            throw new \Exception('[ERROR] Cannot receive message until Telegram API is connected!');
-        }
-
+    public function start() {
         $result = $this->getApi()->getWebhookUpdates();
 
         if (!$result->getMessage()) {
@@ -25,70 +16,148 @@ class Listener extends BaseAction
 
         $text = $result->getMessage()->getText();
         $chatId = $result->getMessage()->getChat()->getId();
+        $botState = '';
 
-        switch ($text) {
-            case '/start':
-                $keyboard = [["\xE2\x9E\xA1 Помощь"], ["\xE2\x9E\xA1 Последний пост VK"]];
-                $replyMarkup = $this->getApi()->replyKeyboardMarkup([
-                    'keyboard' => $keyboard,
-                    'resize_keyboard' => true,
-                    'one_time_keyboard' => false
-                ]);
-
-                try {
-                    $startCommand = new StartCommand($this->getApi(), $this->getLogger());
-                    $startCommand
-                        ->setMessage($result->getMessage())
-                        ->setReplyMarkup($replyMarkup)
-                        ->start();
-                } catch (\Exception $e) {
-                    $this->getLogger()->error(
-                        '(chat_id: ' . $chatId . ') Cannot execute bot /start command: ' . $e->getMessage()
-                    );
-                    throw new \Exception('[ERROR] Cannot execute bot /start command: ' . $e->getMessage());
-                }
-                break;
-            case '/help':
-            case "\xE2\x9E\xA1 Помощь":
-                try {
-                    $helpCommand = new HelpCommand($this->getApi(), $this->getLogger());
-                    $helpCommand
-                        ->setMessage($result->getMessage())
-                        ->start();
-                } catch (\Exception $e) {
-                    $this->getLogger()->error(
-                        '(chat_id: ' . $chatId . ') Cannot execute bot /help command: ' . $e->getMessage()
-                    );
-                    throw new \Exception('[ERROR] Cannot execute bot /help command: ' . $e->getMessage());
-                }
-                break;
-            case '/getVk':
-            case "\xE2\x9E\xA1 Последний пост VK":
-                try {
-                    $getVkCommand = new GetVkCommand($this->getApi(), $this->getLogger());
-                    $getVkCommand
-                        ->setMessage($result->getMessage())
-                        ->start();
-                } catch (\Exception $e) {
-                    $this->getLogger()->error(
-                        '(chat_id: ' . $chatId . ') Cannot execute bot /getVk command: ' . $e->getMessage()
-                    );
-                    throw new \Exception('[ERROR] Cannot execute bot /getVk command: ' . $e->getMessage());
-                }
-                break;
-            default:
-                try {
-                    $defaultCommand = new BaseCommand($this->getApi(), $this->getLogger());
-                    $defaultCommand
-                        ->setMessage($result->getMessage())
-                        ->start();
-                } catch (\Exception $e) {
-                    $this->getLogger()->error(
-                        '(chat_id: ' . $chatId . ') Cannot execute bot default command: ' . $e->getMessage()
-                    );
-                    throw new \Exception('[ERROR] Cannot execute bot default command: ' . $e->getMessage());
-                }
-                break;
+        try {
+            $user = $this->getDatabase()->getUser($chatId);
+            $botState = (isset($user['bot_state']) && $user['bot_state']) ? $user['bot_state'] : 'default';
+        } catch (\Exception $e) {
+            $this->getLogger()->error('(chat_id: ' . $chatId . ') ' . $e->getMessage());
+            throw new \Exception('[ERROR] ' . $e->getMessage());
         }
+
+        $stateMap = $this->getStateMap();
+
+        if (!isset($stateMap[$botState])) {
+            $this->getLogger()->error(
+                '(chat_id: ' . $chatId . ') State ' . $botState . ' not found!'
+            );
+            throw new \Exception('[ERROR] State ' . $botState . ' not found!');
+        }
+
+        $foundState = $stateMap[$botState];
+        $action = $text;
+
+        if (!isset($foundState[$action])) {
+            if (!isset($foundState['/default'])) {
+                $this->getLogger()->error(
+                    '(chat_id: ' . $chatId . ') State ' . $botState . ' command /default not found!'
+                );
+                throw new \Exception('[ERROR] State ' . $botState . ' command /default not found!');
+            }
+            $action = '/default';
+        }
+
+        $commandParams = $foundState[$action];
+
+        if (!$commandParams || !isset($commandParams['class']) || !$commandParams['class'])  {
+            $this->getLogger()->error(
+                '(chat_id: ' . $chatId . ') State ' . $botState . ' command ' . $action . ' class not found!'
+            );
+            throw new \Exception('[ERROR] State ' . $botState . ' command ' . $action . ' class not found!');
+        }
+
+        try {
+            $command = CommandFactory::get($commandParams['class'], $this->getApi(), $this->getLogger());
+            $command
+                ->setMessage($result->getMessage())
+                ->setReplyMarkup(isset($commandParams['markup']) ? $commandParams['markup'] : null)
+                ->start();
+        } catch (\Exception $e) {
+            $this->getLogger()->error(
+                '(chat_id: ' . $chatId . ') Cannot execute bot ' . $action . ' command: ' . $e->getMessage()
+            );
+            throw new \Exception('[ERROR] Cannot execute bot ' . $action . ' command: ' . $e->getMessage());
+        }
+    }
+
+    public static function getDefaultKeyboard() {
+        return [
+            ["\xE2\x9E\x95 Настроить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
+            ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"]
+        ];
+    }
+
+    private function getMarkup($keyboard, $isResize = true, $isOneTime = false) {
+        if (!$keyboard) return null;
+
+        return $this->getApi()->replyKeyboardMarkup([
+            'keyboard' => $keyboard,
+            'resize_keyboard' => $isResize,
+            'one_time_keyboard' => $isOneTime
+        ]);
+    }
+
+    private function getStateMap() {
+        $defaultKeyboard = self::getDefaultKeyboard();
+
+        $vkKeyboard = $defaultKeyboard;
+        array_splice($vkKeyboard, 0, 3);
+
+        $vkAfterKeyboard = $defaultKeyboard;
+        array_splice($vkAfterKeyboard, 0, 1);
+
+        $getVkKeyboard = $defaultKeyboard;
+        array_splice($getVkKeyboard, 1, 1);
+
+        $delVkAfterKeyboard = $defaultKeyboard;
+        array_splice($delVkAfterKeyboard, 2, 1);
+
+        $defaultState = array(
+            '/start' => array(
+                'class' => 'StartCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+            ),
+            '/setVk' => array(
+                'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
+            ),
+            "\xE2\x9E\x95 Настроить импорт из VK" => array(
+                'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
+            ),
+            '/getVk' => array(
+                'class' => 'GetVkCommand', 'markup' => $this->getMarkup($getVkKeyboard)
+            ),
+            "\xE2\x98\x95 Последний пост VK" => array(
+                'class' => 'GetVkCommand', 'markup' => $this->getMarkup($getVkKeyboard)
+            ),
+            '/delVk' => array(
+                'class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
+            ),
+            "\xE2\x9D\x8C Удалить импорт из VK" => array(
+                'class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
+            ),
+            '/help' => array(
+                'class' => 'HelpCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+            ),
+            "\xE2\x9D\x93 Помощь" => array(
+                'class' => 'HelpCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+            ),
+            '/default' => array(
+                'class' => 'DefaultCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+            )
+        );
+
+        $setVkMainState = $defaultState;
+        $setVkMainState['/default'] = array(
+            'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
+        );
+
+        $setVkTelegramState = $setVkMainState;
+        $setVkTelegramState['/default'] = array(
+            'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkAfterKeyboard)
+        );
+
+        $delVkMainState = $defaultState;
+        $delVkMainState['/default'] = array(
+            'class' => 'DelVkCommand', 'markup' => $this->getMarkup($delVkAfterKeyboard)
+        );
+
+        $stateMap = array(
+            'default' => $defaultState,
+            'set_vk_main' => $setVkMainState,
+            'set_vk_telegram' => $setVkTelegramState,
+            'del_vk_main' => $delVkMainState
+        );
+
+        return $stateMap;
     }
 }

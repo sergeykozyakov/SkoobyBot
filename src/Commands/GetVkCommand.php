@@ -9,12 +9,20 @@ use VK\VKException;
 
 class GetVkCommand extends BaseCommand
 {
-    protected static $limit = 20;
-    protected static $photoSizes = array(1280, 807, 604, 130, 75);
+    private static $limit = 20;
+    private static $photoSizes = array(1280, 807, 604, 130, 75);
 
     public function start() {
         if (!$this->getMessage() && !$this->getIsCron()) {
             throw new \Exception('Telegram API message is not defined!');
+        }
+
+        if (!$this->getIsCron()) {
+            try {
+                $this->getDatabase()->setBotState($this->getChatId(), 'default');
+            } catch (\Exception $e) {
+                throw $e;
+            }
         }
 
         $vkAppId = Config::getVkAppId();
@@ -24,9 +32,13 @@ class GetVkCommand extends BaseCommand
         if (!$vkAppId || !$vkSecret || !$vkToken) {
             if (!$this->getIsCron()) {
                 $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No VK API tokens were specified!');
-
                 $response = 'Нет ключей доступа для подключения к серверу VK! Извини, это поломка на моей стороне.';
-                $this->sendMessage($response);
+
+                try {
+                    $this->sendMessage($response);
+                } catch (\Exception $e) {
+                    throw $e;
+                }
             }
             else {
                 $this->getLogger()->warning('(cron) No VK API tokens were specified!');
@@ -37,45 +49,59 @@ class GetVkCommand extends BaseCommand
         $rows = array();
         if (!$this->getIsCron()) {
             try {
-                $rows[] = $this->getUser()->getUser($this->getChatId());
+                $user = $this->getDatabase()->getUser($this->getChatId());
+                $rows[] = $user;
             } catch (\Exception $e) {
-                $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') Cannot get user(s) from database (' . $e->getMessage() . ')');
-
-                $response = 'Не могу получить информацию о тебе! Попробуй позже.';
-                $this->sendMessage($response);
-                return;
+                throw $e;
             }
         }
         else {
             try {
-                $rows = $this->getUser()->getAllUsers();
+                $rows = $this->getDatabase()->getAllConnectedUsers();
             } catch (\Exception $e) {
-                $this->getLogger()->warning('(cron) Cannot get user list from database (' . $e->getMessage() . ')');
-                return;
+                throw $e;
             }
         }
 
-        foreach($rows as $row) {
-            if (!$this->readWall($row, $vkAppId, $vkSecret, $vkToken)) {
-                break;
+        try {
+            foreach($rows as $row) {
+                if (!$this->readWall($row, $vkAppId, $vkSecret, $vkToken)) {
+                    break;
+                }
             }
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 
     private function readWall($row, $vkAppId, $vkSecret, $vkToken) {
-        if (!$row || !isset($row['vk_wall']) || !isset($row['channel']) || !isset($row['vk_last_unixtime'])) {
+        if (!isset($row['vk_wall']) || !$row['vk_wall'] ||
+            !isset($row['vk_last_unixtime']) || !$row['vk_last_unixtime'] ||
+            !isset($row['channel']) || !$row['channel']) {
             if (!$this->getIsCron()) {
-                $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No user information was specified!');
-
-                $response = 'Не могу получить информацию о твоих привязках к VK!';
-                $this->sendMessage($response);
-            }
-            else {
                 $this->getLogger()->warning(
-                    '(cron, channel: ' . $row['channel'] . ', vk_wall: ' . $row['vk_wall'] . ') No user information was specified!'
+                    '(chat_id: ' . $this->getChatId() . ') No user VK import information was specified!'
                 );
+                $response = 'У тебя ещё не настроен импорт из VK!';
+
+                try {
+                    $this->sendMessage($response);
+                } catch (\Exception $e) {
+                    throw $e;
+                }
             }
             return true;
+        }
+        else {
+            if (!$this->getIsCron()) {
+                $response = "Настроен следующий импорт\n\nVK: " . $row['vk_wall'] . "\nTelegram: " . $row['channel'];
+
+                try {
+                    $this->sendMessage($response);
+                } catch (\Exception $e) {
+                    throw $e;
+                }
+            }
         }
 
         $vkWall = $row['vk_wall'];
@@ -109,9 +135,13 @@ class GetVkCommand extends BaseCommand
             } catch (VKException $e) {
                 if (!$this->getIsCron()) {
                     $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') VK API connection error! ' . $e->getMessage());
-
                     $response = 'Не могу подключиться к серверу VK! Попробуй позже.';
-                    $this->sendMessage($response);
+
+                    try {
+                        $this->sendMessage($response);
+                    } catch (\Exception $e) {
+                        throw $e;
+                    }
                 }
                 else {
                     $this->getLogger()->warning('(cron) VK API connection error! ' . $e->getMessage());
@@ -125,9 +155,14 @@ class GetVkCommand extends BaseCommand
                         '(chat_id: ' . $this->getChatId() . ', vk_wall: ' . $vkWall . ') Cannot read received VK API response!'
                     );
 
-                    $response = 'Не могу получить посты из VK! ' .
-                        'Такое бывает, если у пользователя закрыта стена или удалена страница, попробуй потом ещё раз.';
-                    $this->sendMessage($response);
+                    $response = 'Не могу получить пост из VK! Такое бывает, если у пользователя закрыта стена ' .
+                        'или удалена страница. Попробуй потом ещё раз.';
+                    
+                    try {
+                        $this->sendMessage($response);
+                    } catch (\Exception $e) {
+                        throw $e;
+                    }
                 }
                 else {
                     $this->getLogger()->warning('(cron, vk_wall: ' . $vkWall . ') Cannot read received VK API response!');
@@ -196,9 +231,14 @@ class GetVkCommand extends BaseCommand
         }
 
         if (!$this->getIsCron() && count($postList) == 0) {
+            $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No user VK posts were found!');
             $response = 'Пока нет ни одного поста.';
-            $this->sendMessage($response);
 
+            try {
+                $this->sendMessage($response);
+            } catch (\Exception $e) {
+                throw $e;
+            }
             return true;
         }
 
@@ -230,27 +270,18 @@ class GetVkCommand extends BaseCommand
                 }
 
                 if ($this->getIsCron()) {
-                    try {
-                        $this->getUser()->setVkLastUnixtime($originalChatId, $item['date']);
-                    } catch (\Exception $e) {
-                        $this->getLogger()->warning(
-                            '(cron, chat_id: ' . $originalChatId . ') Cannot set user vk_last_unixtime to database (' . $e->getMessage() . ')'
-                        );
-                    }
+                    $this->getDatabase()->setVkLastUnixtime($originalChatId, $item['date']);
                 }
             } catch (\Exception $e) {
                 if (!$this->getIsCron()) {
-                    throw new \Exception($e->getMessage());
+                    throw $e;
                 }
                 else {
-                    $this->getLogger()->warning(
-                        '(cron, channel: ' . $this->getChatId() . ') Cannot send photo/message to channel via Telegram API!'
-                    );
+                    $this->getLogger()->warning('(cron, channel: ' . $this->getChatId() . ') ' . $e->getMessage());
                 }
                 return true;
             }
         }
-
         return true;
     }
 }
