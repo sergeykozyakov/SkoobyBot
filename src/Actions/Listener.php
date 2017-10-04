@@ -18,7 +18,7 @@ class Listener extends BaseAction
         $chatId = $result->getMessage()->getChat()->getId();
 
         $keyboard = [
-            ["\xE2\x9E\x95 Добавить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
+            ["\xE2\x9E\x95 Настроить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
             ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"]
         ];
 
@@ -78,7 +78,7 @@ class Listener extends BaseAction
         $defaultState = array(
             '/start' => 'StartCommand',
             '/setVk' => 'SetVkCommand',
-            "\xE2\x9E\x95 Добавить импорт из VK" => 'SetVkCommand',
+            "\xE2\x9E\x95 Настроить импорт из VK" => 'SetVkCommand',
             '/getVk' => 'GetVkCommand',
             "\xE2\x98\x95 Последний пост VK" => 'GetVkCommand', 
             '/delVk' => 'DelVkCommand',

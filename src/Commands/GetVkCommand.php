@@ -49,7 +49,8 @@ class GetVkCommand extends BaseCommand
         $rows = array();
         if (!$this->getIsCron()) {
             try {
-                $rows[] = $this->getDatabase()->getUser($this->getChatId());
+                $user = $this->getDatabase()->getUser($this->getChatId());
+                $rows[] = $user;
             } catch (\Exception $e) {
                 throw $e;
             }
@@ -74,7 +75,9 @@ class GetVkCommand extends BaseCommand
     }
 
     private function readWall($row, $vkAppId, $vkSecret, $vkToken) {
-        if (empty($row) || !$row['vk_wall'] || !$row['channel'] || !$row['vk_last_unixtime']) {
+        if (!isset($row['vk_wall']) || !$row['vk_wall'] ||
+            !isset($row['vk_last_unixtime']) || !$row['vk_last_unixtime'] ||
+            !isset($row['channel']) || !$row['channel']) {
             if (!$this->getIsCron()) {
                 $this->getLogger()->warning(
                     '(chat_id: ' . $this->getChatId() . ') No user VK import information was specified!'
@@ -88,6 +91,17 @@ class GetVkCommand extends BaseCommand
                 }
             }
             return true;
+        }
+        else {
+            if (!$this->getIsCron()) {
+                $response = "Настроен импорт:\nСтена VK: " . $row['vk_wall'] . "\nКанал Telegram: " . $row['channel'];
+
+                try {
+                    $this->sendMessage($response);
+                } catch (\Exception $e) {
+                    throw $e;
+                }
+            }
         }
 
         $vkWall = $row['vk_wall'];
@@ -217,6 +231,7 @@ class GetVkCommand extends BaseCommand
         }
 
         if (!$this->getIsCron() && count($postList) == 0) {
+            $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No user VK posts were found!');
             $response = 'Пока нет ни одного поста.';
 
             try {
@@ -262,9 +277,7 @@ class GetVkCommand extends BaseCommand
                     throw $e;
                 }
                 else {
-                    $this->getLogger()->warning(
-                        '(cron, channel: ' . $this->getChatId() . ') Cannot send photo/message to channel via Telegram API!'
-                    );
+                    $this->getLogger()->warning('(cron, channel: ' . $this->getChatId() . ') ' . $e->getMessage());
                 }
                 return true;
             }

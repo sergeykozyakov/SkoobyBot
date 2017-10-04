@@ -122,8 +122,7 @@ class Database
 
         $arr = array(
             'vk_wall' => $wallId,
-            'vk_last_unixtime' => time(),
-            'channel' => ''
+            'vk_last_unixtime' => time()
         );
 
         try {
@@ -155,6 +154,24 @@ class Database
         $arr = array(
             'channel' => $channel,
             'vk_last_unixtime' => time()
+        );
+
+        try {
+            $this->set($arr, $chatId);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function delVkConnection($chatId) {
+        if (!$chatId) {
+            throw new \Exception('chat_id is not defined!');
+        }
+
+        $arr = array(
+            'vk_wall' => '',
+            'vk_last_unixtime' => time(),
+            'channel' => ''
         );
 
         try {
