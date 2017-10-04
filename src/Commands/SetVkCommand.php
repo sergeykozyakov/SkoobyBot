@@ -45,7 +45,7 @@ class SetVkCommand extends BaseCommand
                 $this->getDatabase()->setBotState($this->getChatId(), 'set_vk_telegram');
             }
             else if ($state == 'set_vk_telegram') {
-                if (!preg_match('/^[a-zA-Z0-9_@]+$/', $text)) {
+                if (!preg_match('/^[@][a-zA-Z0-9_]+$/', $text)) {
                     $keyboard = Listener::getDefaultKeyboard();
                     array_splice($keyboard, 0, 3);
 
