@@ -71,6 +71,13 @@ class Listener extends BaseAction
         }
     }
 
+    protected static function getDefaultKeyboard() {
+        return [
+            ["\xE2\x9E\x95 Настроить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
+            ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"]
+        ];
+    }
+
     private function getMarkup($keyboard, $isResize = true, $isOneTime = false) {
         if (!$keyboard) return null;
 
@@ -82,10 +89,7 @@ class Listener extends BaseAction
     }
 
     private function getStateMap() {
-        $defaultKeyboard = [
-            ["\xE2\x9E\x95 Настроить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
-            ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"]
-        ];
+        $defaultKeyboard = self::getDefaultKeyboard();
 
         $vkKeyboard = $defaultKeyboard;
         array_splice($vkKeyboard, 0, 3);

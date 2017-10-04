@@ -2,6 +2,7 @@
 namespace SkoobyBot\Commands;
 
 use SkoobyBot\Commands\BaseCommand;
+use SkoobyBot\Actions\Listener;
 
 class SetVkCommand extends BaseCommand
 {
@@ -45,9 +46,12 @@ class SetVkCommand extends BaseCommand
             }
             else if ($state == 'set_vk_telegram') {
                 if (!preg_match('/^[a-zA-Z0-9_@]+$/', $text)) {
+                    $keyboard = Listener::getDefaultKeyboard();
+                    array_splice($keyboard, 0, 3);
+
                     $this->setReplyMarkup(
                         $this->getApi()->replyKeyboardMarkup([
-                            'keyboard' => [["\xE2\x9D\x93 Помощь"]],
+                            'keyboard' => $keyboard,
                             'resize_keyboard' => true,
                             'one_time_keyboard' => false
                         ])

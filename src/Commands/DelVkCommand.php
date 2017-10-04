@@ -2,6 +2,7 @@
 namespace SkoobyBot\Commands;
 
 use SkoobyBot\Commands\BaseCommand;
+use SkoobyBot\Actions\Listener;
 
 class DelVkCommand extends BaseCommand
 {
@@ -22,6 +23,17 @@ class DelVkCommand extends BaseCommand
             $isConnected = isset($user['vk_wall']) && $user['vk_wall'] && isset($user['channel']) && $user['channel'];
 
             if (!$isConnected) {
+                $keyboard = Listener::getDefaultKeyboard();
+                array_splice($keyboard, 2, 1);
+
+                $this->setReplyMarkup(
+                    $this->getApi()->replyKeyboardMarkup([
+                        'keyboard' => $keyboard,
+                        'resize_keyboard' => true,
+                        'one_time_keyboard' => false
+                    ])
+                );
+
                 $this->sendMessage($responseNoConnect);
                 $this->getDatabase()->setBotState($this->getChatId(), 'default');
                 return;
