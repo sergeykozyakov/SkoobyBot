@@ -87,19 +87,10 @@ class Listener extends BaseAction
             ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"]
         ];
 
-        $vkKeyboard = $defaultKeyboard;
-        unset($vkKeyboard[0]);
-        unset($vkKeyboard[1]);
-        unset($vkKeyboard[2]);
-
-        $vkAfterKeyboard = $defaultKeyboard;
-        unset($vkAfterKeyboard[0]);
-
-        $getVkKeyboard = $defaultKeyboard;
-        unset($vkKeyboard[1]);
-
-        $delVkAfterKeyboard = $defaultKeyboard;
-        unset($vkAfterKeyboard[2]);
+        $vkKeyboard = array_splice($defaultKeyboard, 0, 3);
+        $vkAfterKeyboard = array_splice($defaultKeyboard, 0, 1);
+        $getVkKeyboard = array_splice($defaultKeyboard, 1, 1);
+        $delVkAfterKeyboard = array_splice($defaultKeyboard, 2, 1);
 
         $defaultState = array(
             '/start' =>
@@ -125,13 +116,19 @@ class Listener extends BaseAction
         );
 
         $setVkMainState = $defaultState;
-        $setVkMainState['/default'] = array('class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard));
+        $setVkMainState['/default'] = array(
+            'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
+        );
 
         $setVkTelegramState = $setVkMainState;
-        $setVkTelegramState['/default'] = array('class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkAfterKeyboard));
+        $setVkTelegramState['/default'] = array(
+            'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkAfterKeyboard)
+        );
 
         $delVkMainState = $defaultState;
-        $delVkMainState['/default'] = array('class' => 'DelVkCommand', 'markup' => $this->getMarkup($delVkAfterKeyboard));
+        $delVkMainState['/default'] = array(
+            'class' => 'DelVkCommand', 'markup' => $this->getMarkup($delVkAfterKeyboard)
+        );
 
         $stateMap = array(
             'default' => $defaultState,
