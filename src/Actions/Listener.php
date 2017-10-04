@@ -71,7 +71,7 @@ class Listener extends BaseAction
         }
     }
 
-    protected static function getDefaultKeyboard() {
+    public static function getDefaultKeyboard() {
         return [
             ["\xE2\x9E\x95 Настроить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
             ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"]
