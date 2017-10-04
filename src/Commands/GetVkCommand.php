@@ -94,7 +94,7 @@ class GetVkCommand extends BaseCommand
         }
         else {
             if (!$this->getIsCron()) {
-                $response = "Настроен импорт:\nСтена VK: " . $row['vk_wall'] . "\nКанал Telegram: " . $row['channel'];
+                $response = "Настроен следующий импорт\n\nVK: " . $row['vk_wall'] . "\nTelegram: " . $row['channel'];
 
                 try {
                     $this->sendMessage($response);
