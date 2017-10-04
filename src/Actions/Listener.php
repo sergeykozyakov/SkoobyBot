@@ -87,10 +87,17 @@ class Listener extends BaseAction
             ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"]
         ];
 
-        $vkKeyboard = array_splice($defaultKeyboard, 0, 3);
-        $vkAfterKeyboard = array_splice($defaultKeyboard, 0, 1);
-        $getVkKeyboard = array_splice($defaultKeyboard, 1, 1);
-        $delVkAfterKeyboard = array_splice($defaultKeyboard, 2, 1);
+        $vkKeyboard = $defaultKeyboard;
+        array_splice($vkKeyboard, 0, 3);
+
+        $vkAfterKeyboard = $defaultKeyboard;
+        array_splice($vkAfterKeyboard, 0, 1);
+
+        $getVkKeyboard = $defaultKeyboard;
+        array_splice($getVkKeyboard, 1, 1);
+
+        $delVkAfterKeyboard = $defaultKeyboard;
+        array_splice($delVkAfterKeyboard, 2, 1);
 
         $defaultState = array(
             '/start' =>
