@@ -100,7 +100,7 @@ class Database
         } catch (\Exception $e) {
             throw new \Exception('Cannot get user list from database! (' . $e->getMessage() . ')');
         }
-        
+
         return $result;
     }
 
@@ -141,7 +141,7 @@ class Database
         }
 
         $arr = array('vk_last_unixtime' => $vkLastUnixTime);
-        
+
         try {
             $this->set($arr, $chatId);
         } catch (\Exception $e) {

@@ -1,7 +1,7 @@
 {
     "name": "sergeykozyakov/SkoobyBot",
-    "description": "Telegram bot for VK posts import and making some special stuff",
-    "version": "1.0.0",
+    "description": "Telegram bot for VK posts import into Telegram channel",
+    "version": "1.1.0",
     "type": "project",
     "keywords": ["skooby", "skooby bot", "skoobybot"],
     "homepage": "https://github.com/sergeykozyakov",
