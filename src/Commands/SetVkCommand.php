@@ -45,6 +45,14 @@ class SetVkCommand extends BaseCommand
             }
             else if ($state == 'set_vk_telegram') {
                 if (!preg_match('/^[a-zA-Z0-9_@]+$/', $text)) {
+                    $this->setReplyMarkup(
+                        $this->getApi()->replyKeyboardMarkup([
+                            'keyboard' => [["\xE2\x9D\x93 Помощь"]],
+                            'resize_keyboard' => true,
+                            'one_time_keyboard' => false
+                        ])
+                    );
+
                     $this->sendMessage($responseFailed);
                     return;
                 }

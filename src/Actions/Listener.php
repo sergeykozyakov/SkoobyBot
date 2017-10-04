@@ -100,26 +100,36 @@ class Listener extends BaseAction
         array_splice($delVkAfterKeyboard, 2, 1);
 
         $defaultState = array(
-            '/start' =>
-                array('class' => 'StartCommand', 'markup' => $this->getMarkup($defaultKeyboard)),
-            '/setVk' =>
-                array('class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)),
-            "\xE2\x9E\x95 Настроить импорт из VK" =>
-                array('class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)),
-            '/getVk' =>
-                array('class' => 'GetVkCommand', 'markup' => $this->getMarkup($getVkKeyboard)),
-            "\xE2\x98\x95 Последний пост VK" =>
-                array('class' => 'GetVkCommand', 'markup' => $this->getMarkup($getVkKeyboard)),
-            '/delVk' =>
-                array('class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)),
-            "\xE2\x9D\x8C Удалить импорт из VK" =>
-                array('class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)),
-            '/help' =>
-                array('class' => 'HelpCommand', 'markup' => $this->getMarkup($defaultKeyboard)),
-            "\xE2\x9D\x93 Помощь" =>
-                array('class' => 'HelpCommand', 'markup' => $this->getMarkup($defaultKeyboard)),
-            '/default' =>
-                array('class' => 'DefaultCommand',  'markup' => $this->getMarkup($defaultKeyboard))
+            '/start' => array(
+                'class' => 'StartCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+            ),
+            '/setVk' => array(
+                'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
+            ),
+            "\xE2\x9E\x95 Настроить импорт из VK" => array(
+                'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
+            ),
+            '/getVk' => array(
+                'class' => 'GetVkCommand', 'markup' => $this->getMarkup($getVkKeyboard)
+            ),
+            "\xE2\x98\x95 Последний пост VK" => array(
+                'class' => 'GetVkCommand', 'markup' => $this->getMarkup($getVkKeyboard)
+            ),
+            '/delVk' => array(
+                'class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
+            ),
+            "\xE2\x9D\x8C Удалить импорт из VK" => array(
+                'class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
+            ),
+            '/help' => array(
+                'class' => 'HelpCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+            ),
+            "\xE2\x9D\x93 Помощь" => array(
+                'class' => 'HelpCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+            ),
+            '/default' => array(
+                'class' => 'DefaultCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+            )
         );
 
         $setVkMainState = $defaultState;
