@@ -16,18 +16,6 @@ class Listener extends BaseAction
 
         $text = $result->getMessage()->getText();
         $chatId = $result->getMessage()->getChat()->getId();
-
-        $keyboard = [
-            ["\xE2\x9E\x95 Настроить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
-            ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"]
-        ];
-
-        $replyMarkup = $this->getApi()->replyKeyboardMarkup([
-            'keyboard' => $keyboard,
-            'resize_keyboard' => true,
-            'one_time_keyboard' => false
-        ]);
-
         $botState = '';
 
         try {
@@ -53,18 +41,27 @@ class Listener extends BaseAction
         if (!isset($foundState[$action])) {
             if (!isset($foundState['/default'])) {
                 $this->getLogger()->error(
-                    '(chat_id: ' . $chatId . ') State ' . $botState . ' command ' . $action . ' not found!'
+                    '(chat_id: ' . $chatId . ') State ' . $botState . ' command /default not found!'
                 );
-                throw new \Exception('[ERROR] State ' . $botState . ' command ' . $action . ' not found!');
+                throw new \Exception('[ERROR] State ' . $botState . ' command /default not found!');
             }
             $action = '/default';
         }
 
+        $commandParams = $foundState[$action];
+
+        if (!$commandParams || !isset($commandParams['class']) || !$commandParams['class'])  {
+            $this->getLogger()->error(
+                '(chat_id: ' . $chatId . ') State ' . $botState . ' command ' . $action . ' class not found!'
+            );
+            throw new \Exception('[ERROR] State ' . $botState . ' command ' . $action . ' class not found!');
+        }
+
         try {
-            $command = CommandFactory::get($foundState[$action], $this->getApi(), $this->getLogger());
+            $command = CommandFactory::get($commandParams['class'], $this->getApi(), $this->getLogger());
             $command
                 ->setMessage($result->getMessage())
-                ->setReplyMarkup($action == '/start' ? $replyMarkup : null)
+                ->setReplyMarkup(isset($commandParams['markup']) ? $commandParams['markup'] : null)
                 ->start();
         } catch (\Exception $e) {
             $this->getLogger()->error(
@@ -74,31 +71,73 @@ class Listener extends BaseAction
         }
     }
 
+    private function getMarkup($keyboard, $isResize = true, $isOneTime = false) {
+        if (!$keyboard) return null;
+
+        return $this->getApi()->replyKeyboardMarkup([
+            'keyboard' => $keyboard,
+            'resize_keyboard' => $isResize,
+            'one_time_keyboard' => $isOneTime
+        ]);
+    }
+
     private function getStateMap() {
+        $defaultKeyboard = [
+            ["\xE2\x9E\x95 Настроить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
+            ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"]
+        ];
+
+        $vkKeyboard = $defaultKeyboard;
+        unset($vkKeyboard[0]);
+        unset($vkKeyboard[1]);
+        unset($vkKeyboard[2]);
+
+        $vkAfterKeyboard = $defaultKeyboard;
+        unset($vkAfterKeyboard[0]);
+
+        $getVkKeyboard = $defaultKeyboard;
+        unset($vkKeyboard[1]);
+
+        $delVkAfterKeyboard = $defaultKeyboard;
+        unset($vkAfterKeyboard[2]);
+
         $defaultState = array(
-            '/start' => 'StartCommand',
-            '/setVk' => 'SetVkCommand',
-            "\xE2\x9E\x95 Настроить импорт из VK" => 'SetVkCommand',
-            '/getVk' => 'GetVkCommand',
-            "\xE2\x98\x95 Последний пост VK" => 'GetVkCommand', 
-            '/delVk' => 'DelVkCommand',
-            "\xE2\x9D\x8C Удалить импорт из VK" => 'DelVkCommand',
-            '/help' => 'HelpCommand',
-            "\xE2\x9D\x93 Помощь" => 'HelpCommand',
-            '/default' => 'DefaultCommand'
+            '/start' =>
+                array('class' => 'StartCommand', 'markup' => this.getMarkup($defaultKeyboard)),
+            '/setVk' =>
+                array('class' => 'SetVkCommand', 'markup' => this.getMarkup($vkKeyboard)),
+            "\xE2\x9E\x95 Настроить импорт из VK" =>
+                array('class' => 'SetVkCommand', 'markup' => this.getMarkup($vkKeyboard)),
+            '/getVk' =>
+                array('class' => 'GetVkCommand', 'markup' => this.getMarkup($getVkKeyboard)),
+            "\xE2\x98\x95 Последний пост VK" =>
+                array('class' => 'GetVkCommand', 'markup' => this.getMarkup($getVkKeyboard)),
+            '/delVk' =>
+                array('class' => 'DelVkCommand', 'markup' => this.getMarkup($vkKeyboard)),
+            "\xE2\x9D\x8C Удалить импорт из VK" =>
+                array('class' => 'DelVkCommand', 'markup' => this.getMarkup($vkKeyboard)),
+            '/help' =>
+                array('class' => 'HelpCommand', 'markup' => this.getMarkup($defaultKeyboard)),
+            "\xE2\x9D\x93 Помощь" =>
+                array('class' => 'HelpCommand', 'markup' => this.getMarkup($defaultKeyboard)),
+            '/default' =>
+                array('class' => 'DefaultCommand',  'markup' => this.getMarkup($defaultKeyboard))
         );
 
-        $setVkState = $defaultState;
-        $setVkState['/default'] = 'SetVkCommand';
+        $setVkMainState = $defaultState;
+        $setVkMainState['/default'] = array('class' => 'SetVkCommand', 'markup' => this.getMarkup($vkKeyboard));
 
-        $delVkState = $defaultState;
-        $delVkState['/default'] = 'DelVkCommand';
+        $setVkTelegramState = $setVkMainState;
+        $setVkTelegramState['/default'] = array('class' => 'SetVkCommand', 'markup' => this.getMarkup($vkAfterKeyboard));
+
+        $delVkMainState = $defaultState;
+        $delVkMainState['/default'] = array('class' => 'DelVkCommand', 'markup' => this.getMarkup($delVkAfterKeyboard));
 
         $stateMap = array(
             'default' => $defaultState,
-            'set_vk_main' => $setVkState,
-            'set_vk_telegram' => $setVkState,
-            'del_vk_main' => $delVkState
+            'set_vk_main' => $setVkMainState,
+            'set_vk_telegram' => $setVkTelegramState,
+            'del_vk_main' => $delVkMainState
         );
 
         return $stateMap;
