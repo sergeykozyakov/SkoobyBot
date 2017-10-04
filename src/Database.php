@@ -25,12 +25,14 @@ class Database
 
     public function init() {
         $sql = 'CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            chat_id VARCHAR(512),
-            bot_state VARCHAR(512),
-            vk_wall VARCHAR(512),
-            vk_last_unixtime INT,
-            channel VARCHAR(512)
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            chat_id BIGINT UNSIGNED,
+            bot_state VARCHAR(1024),
+            vk_wall VARCHAR(1024),
+            vk_last_unixtime BIGINT,
+            channel VARCHAR(1024),
+            KEY chat_id (chat_id),
+            KEY connected (vk_wall, vk_last_unixtime, channel)
         )';
 
         try {
@@ -86,8 +88,9 @@ class Database
         return $result;
     }
 
-    public function getAllUsers() {
-        $sql = 'SELECT chat_id, bot_state, vk_wall, vk_last_unixtime, channel FROM users';
+    public function getAllConnectedUsers() {
+        $sql = "SELECT chat_id, bot_state, vk_wall, vk_last_unixtime, channel FROM users 
+            WHERE vk_wall != '' AND vk_last_unixtime > 0 AND channel != ''";
         $result = null;
 
         try {

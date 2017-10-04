@@ -57,7 +57,7 @@ class GetVkCommand extends BaseCommand
         }
         else {
             try {
-                $rows = $this->getDatabase()->getAllUsers();
+                $rows = $this->getDatabase()->getAllConnectedUsers();
             } catch (\Exception $e) {
                 throw $e;
             }
