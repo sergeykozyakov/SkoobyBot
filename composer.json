@@ -23,5 +23,12 @@
             "SkoobyBot\\": "src/"
         }
     },
-    "scripts": {}
+    "scripts": {
+        "post-update-cmd": [
+            "cd src && php Cli.php -initdb"
+        ],
+        "post-install-cmd": [
+            "cd src && php Cli.php -initdb"
+        ]
+    }
 }

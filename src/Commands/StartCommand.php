@@ -16,8 +16,8 @@ class StartCommand extends BaseCommand
         try {
             $this->sendMessage($response);
 
-            $this->getDatabase()->setBotState($this->getChatId(), 'default');
             $this->getDatabase()->addUser($this->getChatId());
+            $this->getDatabase()->setBotState($this->getChatId(), 'default');
         } catch (\Exception $e) {
             throw $e;
         }
