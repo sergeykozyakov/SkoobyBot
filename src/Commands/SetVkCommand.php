@@ -14,7 +14,7 @@ class SetVkCommand extends BaseCommand
         $firstName = $this->getMessage()->getChat()->getFirstName();
         $response = $firstName . ', для начала импорта постов VK в твой канал Telegram убедись, ' .
             "что твоя стена или группа открыта для всех.\n\nЕсли у твоей страницы или группы есть короткое имя " .
-            '(например vk.com/my_name), то напиши мне это имя. Если у твоей страницы есть только id ' . 
+            '(например vk.com/name), то напиши мне это имя. Если у твоей страницы есть только id ' . 
             '(например vk.com/id000000 или vk.com/club000000), то напиши мне только цифры. Но внимание! '.
             'Если хочешь делать импорт из группы, то перед цифрами обязательно поставь знак минус.';
 
@@ -28,6 +28,8 @@ class SetVkCommand extends BaseCommand
             'Ты можешь уже сейчас проверить работоспособность привязки, выполнив /getVk.';
 
         $responseFailed = "Ты мне прислал что-то не то \xF0\x9F\x98\xB5! Попробуй ещё раз.";
+
+        $responseFailedTelegram = 'Не получится! Другой пользователь уже настроил экспорт в этот канал.';
 
         try {
             $state = $this->getBotState();
@@ -45,19 +47,27 @@ class SetVkCommand extends BaseCommand
                 $this->getDatabase()->setBotState($this->getChatId(), 'set_vk_telegram');
             }
             else if ($state == 'set_vk_telegram') {
+                $keyboard = Listener::getDefaultKeyboard();
+                array_splice($keyboard, 0, 3);
+
+                $replyMarkup = $this->getApi()->replyKeyboardMarkup([
+                    'keyboard' => $keyboard,
+                    'resize_keyboard' => true,
+                    'one_time_keyboard' => false
+                ]);
+
                 if (!preg_match('/^[@][a-zA-Z0-9_]+$/', $text)) {
-                    $keyboard = Listener::getDefaultKeyboard();
-                    array_splice($keyboard, 0, 3);
-
-                    $this->setReplyMarkup(
-                        $this->getApi()->replyKeyboardMarkup([
-                            'keyboard' => $keyboard,
-                            'resize_keyboard' => true,
-                            'one_time_keyboard' => false
-                        ])
-                    );
-
+                    $this->setReplyMarkup($replyMarkup);
                     $this->sendMessage($responseFailed);
+                    return;
+                }
+
+                $row = $this->getDatabase()->getIsChannelConnected($this->getChatId(), $text);
+                $isConnected = isset($row['count']) && $row['count'] > 0;
+
+                if ($isConnected) {
+                    $this->setReplyMarkup($replyMarkup);
+                    $this->sendMessage($responseFailedTelegram);
                     return;
                 }
 
