@@ -13,7 +13,7 @@ class DelVkCommand extends BaseCommand
 
         $response = 'Ты действительно хочешь отключить импорт постов из VK? Если да, то пришли что-нибудь.';
         $responseMain = "Импорт постов из VK отключен. Надеюсь, потом ты передумаешь \xF0\x9F\x98\x89";
-        $responseNoConnect = "У тебя ещё не настроен импорт из VK! Поэтому удалять нечего \xF0\x9F\x98\x89";
+        $responseNoConnect = "У тебя ещё не настроен импорт из VK! Поэтому отключать нечего \xF0\x9F\x98\x89";
 
         try {
             $state = $this->getBotState();
