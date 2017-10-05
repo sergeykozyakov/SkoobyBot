@@ -205,6 +205,7 @@ class GetVkCommand extends BaseCommand
                             case 'link':
                                 $attachmentUrl = $attachment['link']['url'];
                                 $postLinks[] = array('url' => $attachmentUrl);
+                                break;
                             default:
                                 $needLink = true;
                                 break;
