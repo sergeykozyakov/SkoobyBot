@@ -110,7 +110,7 @@ class GetVkCommand extends BaseCommand
         $originalChatId = $row['chat_id'];
 
         if ($this->getIsCron()) {
-            $this->chatId = $channel;
+            $this->setChatId($channel);
         }
 
         $offset = 1;

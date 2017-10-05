@@ -52,13 +52,13 @@ abstract class BaseCommand
         return $this->database;
     }
 
+    public function getIsCron() {
+        return $this->isCron;
+    }
+
     public function setIsCron($isCron) {
         $this->isCron = $isCron;
         return $this;
-    }
-
-    public function getIsCron() {
-        return $this->isCron;
     }
 
     public function getMessage() {
@@ -79,13 +79,18 @@ abstract class BaseCommand
         return $this->chatId;
     }
 
-    public function setReplyMarkup($replyMarkup) {
-        $this->replyMarkup = $replyMarkup;
+    protected function setChatId($chatId) {
+        $this->chatId = $chatId;
         return $this;
     }
 
     public function getReplyMarkup() {
         return $this->replyMarkup;
+    }
+
+    public function setReplyMarkup($replyMarkup) {
+        $this->replyMarkup = $replyMarkup;
+        return $this;
     }
 
     protected function getBotState() {
