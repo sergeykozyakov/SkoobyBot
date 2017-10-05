@@ -246,7 +246,7 @@ class GetVkCommand extends BaseCommand
         foreach (array_reverse($postList) as $item) {
             try {
                 if ($item['text']) {
-                    $this->sendMessage($item['text']);
+                    $this->sendMessage($item['text'], null, true);
                 }
 
                 if (count($item['photos']) > 0) {
