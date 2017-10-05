@@ -110,7 +110,7 @@ class GetVkCommand extends BaseCommand
         $originalChatId = $row['chat_id'];
 
         if ($this->getIsCron()) {
-            $this->chatId = $channel;
+            $this->setChatId($channel);
         }
 
         $offset = 1;
@@ -205,6 +205,7 @@ class GetVkCommand extends BaseCommand
                             case 'link':
                                 $attachmentUrl = $attachment['link']['url'];
                                 $postLinks[] = array('url' => $attachmentUrl);
+                                break;
                             default:
                                 $needLink = true;
                                 break;
@@ -245,7 +246,7 @@ class GetVkCommand extends BaseCommand
         foreach (array_reverse($postList) as $item) {
             try {
                 if ($item['text']) {
-                    $this->sendMessage($item['text']);
+                    $this->sendMessage($item['text'], null, true);
                 }
 
                 if (count($item['photos']) > 0) {

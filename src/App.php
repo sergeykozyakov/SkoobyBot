@@ -26,7 +26,7 @@ class App
         return $this->logger;
     }
 
-    public function start($mode = '') {
+    public function start($params = array()) {
         $logDir = Config::getLogDir();
 
         try {
@@ -39,7 +39,11 @@ class App
 
         try {
             $db = Database::getInstance();
-            $db->init();
+            if (in_array('-initdb', $params)) {
+                $db->init();
+                echo 'Database table structure is ready!';
+                if (!in_array('-cron', $params)) return;
+            }
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
@@ -47,7 +51,7 @@ class App
             return;
         }
 
-        if (isset($_GET['cron']) || $mode == 'cron') {
+        if (in_array('-cron', $params)) {
             try {
                 $sender = new Sender($this->logger);
                 $sender->start();
