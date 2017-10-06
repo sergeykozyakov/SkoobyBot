@@ -104,9 +104,13 @@ class Listener extends BaseAction
 
     private function getStateMap($isConnected) {
         $defaultKeyboard = self::getDefaultKeyboard($isConnected);
+        $defaultTriggeredKeyboard = self::getDefaultKeyboard(!$isConnected);
 
         $keyboard = $defaultKeyboard;
         array_splice($keyboard, -1);
+
+        $triggeredKeyboard = $defaultTriggeredKeyboard;
+        array_splice($triggeredKeyboard, -1);
 
         $vkKeyboard = $defaultKeyboard;
         array_splice($vkKeyboard, 0, -1);
@@ -160,12 +164,12 @@ class Listener extends BaseAction
 
         $setVkTelegramState = $setVkMainState;
         $setVkTelegramState['/default'] = array(
-            'class' => 'SetVkCommand', 'markup' => $this->getMarkup($keyboard)
+            'class' => 'SetVkCommand', 'markup' => $this->getMarkup($triggeredKeyboard)
         );
 
         $delVkMainState = $defaultState;
         $delVkMainState['/default'] = array(
-            'class' => 'DelVkCommand', 'markup' => $this->getMarkup($keyboard)
+            'class' => 'DelVkCommand', 'markup' => $this->getMarkup($triggeredKeyboard)
         );
 
         $stateMap = array(
