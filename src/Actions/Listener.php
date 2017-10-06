@@ -164,7 +164,7 @@ class Listener extends BaseAction
 
         $setVkTelegramState = $setVkMainState;
         $setVkTelegramState['/default'] = array(
-            'class' => 'SetVkCommand', 'markup' => $this->getMarkup($triggeredKeyboard)
+            'class' => 'SetVkCommand', 'markup' => $this->getMarkup($isConnected ? $keyboard : $triggeredKeyboard)
         );
 
         $delVkMainState = $defaultState;
