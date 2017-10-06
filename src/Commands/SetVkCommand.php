@@ -41,7 +41,7 @@ class SetVkCommand extends BaseCommand
 
         $responseTelegramVerify = 'Этот канал теперь помогает наполнять @skooby_bot.';
         $responseFailed = "Ты мне прислал что-то не то \xF0\x9F\x98\xB5! Попробуй ещё раз.";
-        $responseTelegramFailed = 'Не получилось! Другой пользователь уже настроил экспорт в этот канал.';
+        $responseTelegramFailed = 'Другой пользователь уже настроил импорт в этот канал! Повтори, может неправильно ввёл.';
         $responseTelegramVerifyFailed = 'Этот канал не существует или ты не назначил меня админом! Попробуй ещё раз.';
 
         try {
@@ -88,20 +88,22 @@ class SetVkCommand extends BaseCommand
                 }
 
                 $originalChatId = $this->getChatId();
+                $originalReplyMarkup = $this->getReplyMarkup();
+
                 $this->setChatId($text);
+                $this->setReplyMarkup(null);
 
                 try {
-                    $this->setReplyMarkup(null); //
                     $this->sendMessage($responseTelegramVerify);
                 } catch (\Exception $e) {
                     $this->setChatId($originalChatId);
-
                     $this->setReplyMarkup($replyMarkup);
-                    $this->sendMessage($responseTelegramVerifyFailed + ' (' . $e->getMessage() . ')');
+                    $this->sendMessage($responseTelegramVerifyFailed);
                     return;
                 }
 
                 $this->setChatId($originalChatId);
+                $this->setReplyMarkup($originalReplyMarkup);
                 $this->sendMessage($responseTelegram);
 
                 $this->getDatabase()->setChannel($this->getChatId(), $text);
