@@ -16,17 +16,20 @@ class Listener extends BaseAction
 
         $text = $result->getMessage()->getText();
         $chatId = $result->getMessage()->getChat()->getId();
+
         $botState = '';
+        $isConnected = false;
 
         try {
             $user = $this->getDatabase()->getUser($chatId);
             $botState = (isset($user['bot_state']) && $user['bot_state']) ? $user['bot_state'] : 'default';
+            $isConnected = isset($user['vk_wall']) && $user['vk_wall'] && isset($user['channel']) && $user['channel'];
         } catch (\Exception $e) {
             $this->getLogger()->error('(chat_id: ' . $chatId . ') ' . $e->getMessage());
             throw new \Exception('[ERROR] ' . $e->getMessage());
         }
 
-        $stateMap = $this->getStateMap();
+        $stateMap = $this->getStateMap($isConnected);
 
         if (!isset($stateMap[$botState])) {
             $this->getLogger()->error(
@@ -71,11 +74,22 @@ class Listener extends BaseAction
         }
     }
 
-    public static function getDefaultKeyboard() {
-        return [
-            ["\xE2\x9E\x95 Настроить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
-            ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"]
-        ];
+    public static function getDefaultKeyboard($isConnected = false) {
+        $keyboard = array();
+
+        if ($isConnected) {
+            $keyboard = [
+                ["\xE2\x9C\x8F Настроить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
+                ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"], ["\xE2\x9B\x94 Отмена"]
+            ];
+        }
+        else {
+            $keyboard = [
+                ["\xE2\x9E\x95 Добавить импорт из VK"], ["\xE2\x9D\x93 Помощь"], ["\xE2\x9B\x94 Отмена"]
+            ];
+        }
+
+        return $keyboard;
     }
 
     private function getMarkup($keyboard, $isResize = true, $isOneTime = false) {
@@ -88,36 +102,37 @@ class Listener extends BaseAction
         ]);
     }
 
-    private function getStateMap() {
-        $defaultKeyboard = self::getDefaultKeyboard();
+    private function getStateMap($isConnected) {
+        $defaultKeyboard = self::getDefaultKeyboard($isConnected);
+        $defaultTriggeredKeyboard = self::getDefaultKeyboard(!$isConnected);
+
+        $keyboard = $defaultKeyboard;
+        array_splice($keyboard, -1);
+
+        $triggeredKeyboard = $defaultTriggeredKeyboard;
+        array_splice($triggeredKeyboard, -1);
 
         $vkKeyboard = $defaultKeyboard;
-        array_splice($vkKeyboard, 0, 3);
-
-        $vkAfterKeyboard = $defaultKeyboard;
-        array_splice($vkAfterKeyboard, 0, 1);
-
-        $getVkKeyboard = $defaultKeyboard;
-        array_splice($getVkKeyboard, 1, 1);
-
-        $delVkAfterKeyboard = $defaultKeyboard;
-        array_splice($delVkAfterKeyboard, 2, 1);
+        array_splice($vkKeyboard, 0, -1);
 
         $defaultState = array(
             '/start' => array(
-                'class' => 'StartCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+                'class' => 'StartCommand', 'markup' => $this->getMarkup($keyboard)
             ),
             '/setVk' => array(
                 'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
             ),
-            "\xE2\x9E\x95 Настроить импорт из VK" => array(
+            "\xE2\x9E\x95 Добавить импорт из VK" => array(
+                'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
+            ),
+            "\xE2\x9C\x8F Настроить импорт из VK" => array(
                 'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
             ),
             '/getVk' => array(
-                'class' => 'GetVkCommand', 'markup' => $this->getMarkup($getVkKeyboard)
+                'class' => 'GetVkCommand', 'markup' => $this->getMarkup($keyboard)
             ),
             "\xE2\x98\x95 Последний пост VK" => array(
-                'class' => 'GetVkCommand', 'markup' => $this->getMarkup($getVkKeyboard)
+                'class' => 'GetVkCommand', 'markup' => $this->getMarkup($keyboard)
             ),
             '/delVk' => array(
                 'class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
@@ -125,14 +140,20 @@ class Listener extends BaseAction
             "\xE2\x9D\x8C Удалить импорт из VK" => array(
                 'class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
             ),
+            '/cancel' => array(
+                'class' => 'CancelCommand', 'markup' => $this->getMarkup($keyboard)
+            ),
+            "\xE2\x9B\x94 Отмена" => array(
+                'class' => 'CancelCommand', 'markup' => $this->getMarkup($keyboard)
+            ),
             '/help' => array(
-                'class' => 'HelpCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+                'class' => 'HelpCommand', 'markup' => $this->getMarkup($keyboard)
             ),
             "\xE2\x9D\x93 Помощь" => array(
-                'class' => 'HelpCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+                'class' => 'HelpCommand', 'markup' => $this->getMarkup($keyboard)
             ),
             '/default' => array(
-                'class' => 'DefaultCommand', 'markup' => $this->getMarkup($defaultKeyboard)
+                'class' => 'DefaultCommand', 'markup' => $this->getMarkup($keyboard)
             )
         );
 
@@ -143,12 +164,12 @@ class Listener extends BaseAction
 
         $setVkTelegramState = $setVkMainState;
         $setVkTelegramState['/default'] = array(
-            'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkAfterKeyboard)
+            'class' => 'SetVkCommand', 'markup' => $this->getMarkup($isConnected ? $keyboard : $triggeredKeyboard)
         );
 
         $delVkMainState = $defaultState;
         $delVkMainState['/default'] = array(
-            'class' => 'DelVkCommand', 'markup' => $this->getMarkup($delVkAfterKeyboard)
+            'class' => 'DelVkCommand', 'markup' => $this->getMarkup($triggeredKeyboard)
         );
 
         $stateMap = array(

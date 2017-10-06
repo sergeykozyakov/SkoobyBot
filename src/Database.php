@@ -104,6 +104,30 @@ class Database
         return $result;
     }
 
+    public function getIsChannelConnected($chatId, $channel) {
+        if (!$chatId) {
+            throw new \Exception('chat_id is not defined!');
+        }
+
+        if (!$channel) {
+            throw new \Exception('channel is not defined!');
+        }
+
+        $sql = "SELECT COUNT(*) AS count FROM users WHERE
+            vk_wall != '' AND vk_last_unixtime > 0 AND channel = ? AND chat_id != ?";
+        $result = null;
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(array($channel, $chatId));
+            $result = $stmt->fetch();
+        } catch (\Exception $e) {
+            throw new \Exception('Cannot get if channel is connected from database! (' . $e->getMessage() . ')');
+        }
+
+        return $result;
+    }
+
     public function setBotState($chatId, $state = '') {
         if (!$chatId) {
             throw new \Exception('chat_id is not defined!');
@@ -112,7 +136,7 @@ class Database
         $arr = array('bot_state' => $state);
 
         try {
-            $this->set($arr, $chatId);
+            $this->set($chatId, $arr);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -129,7 +153,7 @@ class Database
         );
 
         try {
-            $this->set($arr, $chatId);
+            $this->set($chatId, $arr);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -143,7 +167,7 @@ class Database
         $arr = array('vk_last_unixtime' => $vkLastUnixTime);
 
         try {
-            $this->set($arr, $chatId);
+            $this->set($chatId, $arr);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -160,7 +184,7 @@ class Database
         );
 
         try {
-            $this->set($arr, $chatId);
+            $this->set($chatId, $arr);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -178,19 +202,19 @@ class Database
         );
 
         try {
-            $this->set($arr, $chatId);
+            $this->set($chatId, $arr);
         } catch (\Exception $e) {
             throw $e;
         }
     }
 
-    private function set($params, $chatId) {
-        if (empty($params)) {
-            throw new \Exception('User params is not defined!');
-        }
-
+    private function set($chatId, $params) {
         if (!$chatId) {
             throw new \Exception('chat_id is not defined!');
+        }
+
+        if (empty($params)) {
+            throw new \Exception('User params is not defined!');
         }
 
         $sql = 'UPDATE users SET ';
