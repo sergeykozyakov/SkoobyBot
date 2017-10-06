@@ -91,6 +91,7 @@ class SetVkCommand extends BaseCommand
                 $this->setChatId($text);
 
                 try {
+                    $this->setReplyMarkup(null); //
                     $this->sendMessage($responseTelegramVerify);
                 } catch (\Exception $e) {
                     $this->setChatId($originalChatId);
