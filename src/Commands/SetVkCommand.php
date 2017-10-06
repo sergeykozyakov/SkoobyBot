@@ -64,7 +64,7 @@ class SetVkCommand extends BaseCommand
             }
             else if ($state == 'set_vk_telegram') {
                 $keyboard = Listener::getDefaultKeyboard();
-                array_splice($keyboard, 0, 3);
+                array_splice($keyboard, 0, -1);
 
                 $replyMarkup = $this->getApi()->replyKeyboardMarkup([
                     'keyboard' => $keyboard,
