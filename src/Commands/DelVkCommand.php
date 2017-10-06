@@ -24,6 +24,7 @@ class DelVkCommand extends BaseCommand
 
             if (!$isConnected) {
                 $keyboard = Listener::getDefaultKeyboard();
+                array_splice($keyboard, -1);
 
                 $this->setReplyMarkup(
                     $this->getApi()->replyKeyboardMarkup([
