@@ -30,7 +30,7 @@ class SetVkCommand extends BaseCommand
             "в качестве ещё одного админа твоего канала (меня можно найти как @skooby_bot).\n\n" .
             'Сделал? Теперь окончательное действие — напиши мне имя своего канала (начни с символа @).';
 
-        $responseMainConnected = "Успешно! Если не хочень менять канал Telegram, то можно просто вызвать /help.\n\n" .
+        $responseMainConnected = "Успешно! Если не хочень менять канал Telegram, то можно просто нажать Отмена.\n\n" .
             'Если меняем, то убедись, что у тебя создан Telegram канал и у твоего канала задано имя вида @channel_name. ' .    
             "Тебе нужно добавить меня в качестве ещё одного админа твоего канала (меня можно найти как @skooby_bot).\n\n" .
             'Если сделал, то напиши мне имя своего канала (начни с символа @).';
@@ -96,7 +96,7 @@ class SetVkCommand extends BaseCommand
                     $this->setChatId($originalChatId);
 
                     $this->setReplyMarkup($replyMarkup);
-                    $this->sendMessage($responseTelegramVerifyFailed);
+                    $this->sendMessage($responseTelegramVerifyFailed + ' (' . $e->getMessage() . ')');
                     return;
                 }
 
