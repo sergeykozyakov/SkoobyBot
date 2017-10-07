@@ -27,7 +27,7 @@ abstract class BaseAction
         }
 
         try {
-            $api = new Api($token);
+            $api = new TelegramApi($token);
             $this->api = $api;
         } catch (TelegramSDKException $e) {
             $this->logger->error('Telegram API connection error! ' . $e->getMessage());
@@ -53,5 +53,15 @@ abstract class BaseAction
 
     public function getDatabase() {
         return $this->database;
+    }
+}
+
+class TelegramApi extends Api {
+    public function editMessageReplyMarkup(array $params) {
+        return $this->post('editMessageReplyMarkup', $params);
+    }
+
+    public function answerCallbackQuery(array $params) {
+        return $this->post('answerCallbackQuery', $params);
     }
 }

@@ -2,12 +2,24 @@
 namespace SkoobyBot\Actions;
 
 use SkoobyBot\Actions\BaseAction;
+use SkoobyBot\Actions\InlineAction;
 use SkoobyBot\Commands\CommandFactory;
 
 class Listener extends BaseAction
 {
     public function start() {
         $result = $this->getApi()->getWebhookUpdates();
+
+        if ($result->getCallbackQuery()) {
+            try {
+                $inlineAction = new InlineAction($this->getLogger());
+                $inlineAction->setCallbackQuery($result->getCallbackQuery());
+                $inlineAction->start();
+            } catch (\Exception $e) {
+                throw $e;
+            }
+            return;
+        }
 
         if (!$result->getMessage()) {
             $this->getLogger()->error('Cannot read received Telegram API message!');

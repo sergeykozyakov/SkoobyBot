@@ -18,6 +18,12 @@ class HelpCommand extends BaseCommand
             '/delVk, чтобы отключить сбор постов. По более серьёзным вопросам пиши @sergeykozyakov.';
 
         try {
+            $this->setReplyMarkup(
+                $this->getApi()->replyKeyboardMarkup([
+                    'inline_keyboard' => [[['text' => "\xF0\x9F\x91\x8D", 'callback_data' => 'like']]]
+                ])
+            );
+
             $this->sendMessage($response);
             $this->getDatabase()->setBotState($this->getChatId(), 'default');
         } catch (\Exception $e) {
