@@ -16,48 +16,68 @@ class InlineAction extends BaseAction
 
         $query = $this->callbackQuery->getData();
         $queryId = $this->callbackQuery->getId();
-        $chatId = $this->callbackQuery->getMessage()->getChat()->getId();
+
+        $tUserId = $this->callbackQuery->getFrom()->getId();
+        $channel = '@' . $this->callbackQuery->getMessage()->getChat()->getUsername();
         $messageId = $this->callbackQuery->getMessage()->getMessageId();
 
-        $date = null;
-        $replyMarkup = null;
-        $callbackText = '';
+        if ($query != 'like' && $query != 'dislike') {
+            throw new \Exception('Unsupported inline keyboard query via Telegram API! (' . $query . ')');
+        }
 
-        switch ($query) {
-            case 'like':
-                /** TODO:
-                 * При создании сообщения в канал - делать запись в БД likes, узнав message_id.
-                 * Это делается через return on sendMessage(), поле getMessageId().
-                 * 
-                 * Здесь проверять таблицу по юзеру и чату+сообщению
-                 * Если лайк пустой, то сообщение, что понравилось, затем запись в бд и подсчёт
-                 * и выдача лайков этого чата+сообщения
-                 * 
-                 * Если лайк = 1, то сообщение, что лайк отозван, затем запись в бд и подсчёт
-                 * и выдача лайков этого чата+сообщения
-                 * 
-                 * Настроить связь с БД таблицей likes:
-                 * id = A_I,
-                 * channel = $this->callbackQuery->getMessage()->getChat()->getId(),
-                 * message_id = $this->callbackQuery->getMessage()->getMessageId(),
-                 * user_id = $this->callbackQuery->getFrom()->getId(),
-                 * is_liked = 1/0,
-                 * is_disliked = 1/0
-                 */
-                $date = date("d.m.Y H:i:s");
-                $replyMarkup = $this->getApi()->replyKeyboardMarkup([
-                    'inline_keyboard' => [[['text' => "\xF0\x9F\x91\x8D " . $date, 'callback_data' => 'like']]]
-                ]);
-                $callbackText = 'Вам это понравилось';        
+        $callbackCode = null;
+        $likesCountList = array();
+
+        try {
+            $callbackCode = $this->getDatabase()->setLike(
+                $channel, $messageId, $tUserId, ($query == 'like'), ($query == 'dislike')
+            );
+            $likesCountList = $this->getDatabase()->getLikesCount($channel, $messageId);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        $sumLikes = 0;
+        $sumDislikes = 0;
+
+        if (isset($likesCountList['sum_likes'])) {
+            $sumLikes = $likesCountList['sum_likes'];
+        }
+
+        if (isset($likesCountList['sum_dislikes'])) {
+            $sumDislikes = $likesCountList['sum_dislikes'];
+        }
+
+        $replyMarkup = $this->getApi()->replyKeyboardMarkup([
+            'inline_keyboard' => [[
+                ['text' => "\xF0\x9F\x91\x8D" . ($sumLikes > 0 ? ' ' . $sumLikes : ''), 'callback_data' => 'like'],
+                ['text' => "\xF0\x9F\x91\x8E" . ($sumDislikes > 0 ? ' ' . $sumDislikes : ''), 'callback_data' => 'dislike']
+            ]]
+        ]);
+
+        $callbackText = null;
+
+        switch ($callbackCode) {
+            case '+like':
+                $callbackText = 'Вам это понравилось';
+                break;
+            case '-like':
+                $callbackText = 'Вы забрали свой лайк';
+                break;
+            case '+dislike':
+                $callbackText = 'Вам это не понравилось';
+                break;
+            case '-dislike':
+                $callbackText = 'Вы забрали свой дизлайк';
                 break;
             default:
-                throw new \Exception('Unsupported inline keyboard query via Telegram API! (' . $query . ')');
+                $callbackText = 'Произошла ошибка!';
                 break;
         }
 
         try {
             $this->getApi()->editMessageReplyMarkup([
-                'chat_id' => $chatId,
+                'chat_id' => $channel,
                 'message_id' => $messageId,
                 'reply_markup' => $replyMarkup
             ]);

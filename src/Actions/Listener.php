@@ -16,7 +16,11 @@ class Listener extends BaseAction
                 $inlineAction->setCallbackQuery($result->getCallbackQuery());
                 $inlineAction->start();
             } catch (\Exception $e) {
-                throw $e;
+                $channel = $result->getCallbackQuery()->getMessage()->getChat()->getId();
+                $this->getLogger()->error(
+                    '(channel: ' . $channel . ') Cannot execute bot inline callback command: ' . $e->getMessage()
+                );
+                throw new \Exception('[ERROR] Cannot execute bot inline callback command: ' . $e->getMessage());
             }
             return;
         }

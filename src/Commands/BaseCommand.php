@@ -114,8 +114,10 @@ abstract class BaseCommand
             throw new \Exception('Telegram API chat_id is not defined!');
         }
 
+        $message = null;
+
         try {
-            $this->api->sendMessage([
+            $message = $this->api->sendMessage([
                 'chat_id' => $this->chatId,
                 'text' => $text,
                 'reply_markup' => $this->replyMarkup,
@@ -125,6 +127,14 @@ abstract class BaseCommand
         } catch (TelegramSDKException $e) {
             throw new \Exception('Cannot send message via Telegram API! (' . $e->getMessage() . ')');
         }
+
+        if (!$this->isCron) return;
+
+        try {
+            $this->database->addPost($this->chatId, $message->getMessageId());
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     protected function sendPhoto($photo, $caption = null) {
@@ -132,14 +142,25 @@ abstract class BaseCommand
             throw new \Exception('Telegram API chat_id is not defined!');
         }
 
+        $message = null;
+
         try {
-            $this->api->sendPhoto([
+            $message = $this->api->sendPhoto([
                 'chat_id' => $this->chatId,
                 'photo' => $photo,
-                'caption' => $caption
+                'caption' => $caption,
+                'reply_markup' => $this->replyMarkup
             ]);
         } catch (TelegramSDKException $e) {
             throw new \Exception('Cannot send photo via Telegram API! (' . $e->getMessage() . ')');
+        }
+
+        if (!$this->isCron) return;
+
+        try {
+            $this->database->addPost($this->chatId, $message->getMessageId());
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 }

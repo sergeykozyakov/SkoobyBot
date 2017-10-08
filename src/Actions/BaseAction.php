@@ -3,8 +3,8 @@ namespace SkoobyBot\Actions;
 
 use SkoobyBot\Config;
 use SkoobyBot\Database;
+use SkoobyBot\TelegramApi;
 
-use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
 abstract class BaseAction
@@ -53,15 +53,5 @@ abstract class BaseAction
 
     public function getDatabase() {
         return $this->database;
-    }
-}
-
-class TelegramApi extends Api {
-    public function editMessageReplyMarkup(array $params) {
-        return $this->post('editMessageReplyMarkup', $params);
-    }
-
-    public function answerCallbackQuery(array $params) {
-        return $this->post('answerCallbackQuery', $params);
     }
 }
