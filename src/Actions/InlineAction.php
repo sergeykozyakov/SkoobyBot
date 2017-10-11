@@ -19,6 +19,8 @@ class InlineAction extends BaseAction
         $queryId = $this->callbackQuery->getId();
 
         $tUserId = $this->callbackQuery->getFrom()->getId();
+        $languageCode = $this->callbackQuery->getFrom()->getLanguageCode();
+
         $channel = '@' . $this->callbackQuery->getMessage()->getChat()->getUsername();
         $messageId = $this->callbackQuery->getMessage()->getMessageId();
 
@@ -56,10 +58,14 @@ class InlineAction extends BaseAction
             ]]
         ]);
 
-        $language = Language::getInstance();
         $callbackText = null;
+        $language = Language::getInstance();
 
         try {
+            $language
+                ->setLanguage($languageCode)
+                ->init();
+
             switch ($callbackCode) {
                 case '+like':
                     $callbackText = $language->get('callback_plus_like');
