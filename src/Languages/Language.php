@@ -12,11 +12,7 @@ class Language
 
     public static function getInstance() {
         if (null === self::$instance) {
-            try {
-                self::$instance = new self();
-            } catch (\Exception $e) {
-                throw $e;
-            }
+            self::$instance = new self();
         }
         return self::$instance;
     }

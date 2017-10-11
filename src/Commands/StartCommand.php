@@ -11,11 +11,12 @@ class StartCommand extends BaseCommand
         }
 
         $firstName = $this->getMessage()->getChat()->getFirstName();
-        $response = $this->getLanguage()->get('start_command', array(
-            'name' => $firstName
-        ));
 
         try {
+            $response = $this->getLanguage()->get('start_command', array(
+                'name' => $firstName
+            ));
+
             $this->sendMessage($response);
 
             $this->getDatabase()->addUser($this->getChatId());

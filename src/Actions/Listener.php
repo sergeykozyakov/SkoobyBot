@@ -9,6 +9,8 @@ use SkoobyBot\Languages\Language;
 
 class Listener extends BaseAction
 {
+    private $language = null;
+
     public function start() {
         $result = $this->getApi()->getWebhookUpdates();
 
@@ -36,9 +38,10 @@ class Listener extends BaseAction
         $chatId = $result->getMessage()->getChat()->getId();
         $languageCode = $result->getMessage()->getFrom()->getLanguageCode();
 
+        $this->language = Language::getInstance();
+
         try {
-            $lang = Language::getInstance();
-            $lang
+            $this->language
                 ->setLanguage($languageCode)
                 ->init();
         } catch (\Exception $e) {
@@ -103,18 +106,36 @@ class Listener extends BaseAction
         }
     }
 
-    public static function getDefaultKeyboard($isConnected = false) {
+    public static function getDefaultKeyboard($isConnected, $language) {
         $keyboard = array();
+
+        $addVk = 'add VK';
+        $editVk = 'edit VK';
+        $getVk = 'get VK';
+        $delVk = 'del VK';
+        $help = 'help';
+        $cancel = 'cancel';
+
+        if ($language) {
+            try {
+                $addVk = $language->get('add_vk_key');
+                $editVk = $language->get('edit_vk_key');
+                $getVk = $language->get('get_vk_key');
+                $delVk = $language->get('del_vk_key');
+                $help = $language->get('help_key');
+                $cancel = $language->get('cancel_key');
+            } catch (\Exception $e) {}
+        }
 
         if ($isConnected) {
             $keyboard = [
-                ["\xE2\x9C\x8F Настроить импорт из VK"], ["\xE2\x98\x95 Последний пост VK"],
-                ["\xE2\x9D\x8C Удалить импорт из VK"], ["\xE2\x9D\x93 Помощь"], ["\xE2\x9B\x94 Отмена"]
+                ["\xE2\x9C\x8F " . $editVk], ["\xE2\x98\x95 " . $getVk], ["\xE2\x9D\x8C " . $delVk],
+                ["\xE2\x9D\x93 " . $help], ["\xE2\x9B\x94 " . $cancel]
             ];
         }
         else {
             $keyboard = [
-                ["\xE2\x9E\x95 Добавить импорт из VK"], ["\xE2\x9D\x93 Помощь"], ["\xE2\x9B\x94 Отмена"]
+                ["\xE2\x9E\x95 " . $addVk], ["\xE2\x9D\x93 " . $help], ["\xE2\x9B\x94 " . $cancel]
             ];
         }
 
@@ -132,8 +153,11 @@ class Listener extends BaseAction
     }
 
     private function getStateMap($isConnected) {
-        $defaultKeyboard = self::getDefaultKeyboard($isConnected);
-        $defaultTriggeredKeyboard = self::getDefaultKeyboard(!$isConnected);
+        $keys = self::getDefaultKeyboard(false, $this->language);
+        $connKeys = self::getDefaultKeyboard(true, $this->language);
+
+        $defaultKeyboard = self::getDefaultKeyboard($isConnected, $this->language);
+        $defaultTriggeredKeyboard = self::getDefaultKeyboard(!$isConnected, $this->language);
 
         $keyboard = $defaultKeyboard;
         array_splice($keyboard, -1);
@@ -151,34 +175,34 @@ class Listener extends BaseAction
             '/setVk' => array(
                 'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
             ),
-            "\xE2\x9E\x95 Добавить импорт из VK" => array(
+            $keys[0][0] => array(
                 'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
             ),
-            "\xE2\x9C\x8F Настроить импорт из VK" => array(
+            $connKeys[0][0] => array(
                 'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
             ),
             '/getVk' => array(
                 'class' => 'GetVkCommand', 'markup' => $this->getMarkup($keyboard)
             ),
-            "\xE2\x98\x95 Последний пост VK" => array(
+            $connKeys[1][0] => array(
                 'class' => 'GetVkCommand', 'markup' => $this->getMarkup($keyboard)
             ),
             '/delVk' => array(
                 'class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
             ),
-            "\xE2\x9D\x8C Удалить импорт из VK" => array(
+            $connKeys[2][0] => array(
                 'class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
             ),
             '/cancel' => array(
                 'class' => 'CancelCommand', 'markup' => $this->getMarkup($keyboard)
             ),
-            "\xE2\x9B\x94 Отмена" => array(
+            $keys[2][0] => array(
                 'class' => 'CancelCommand', 'markup' => $this->getMarkup($keyboard)
             ),
             '/help' => array(
                 'class' => 'HelpCommand', 'markup' => $this->getMarkup($keyboard)
             ),
-            "\xE2\x9D\x93 Помощь" => array(
+            $keys[1][0] => array(
                 'class' => 'HelpCommand', 'markup' => $this->getMarkup($keyboard)
             ),
             '/default' => array(

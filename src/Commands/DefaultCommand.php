@@ -10,11 +10,11 @@ class DefaultCommand extends BaseCommand
             throw new \Exception('Telegram API message is not defined!');
         }
 
-        $response = $this->getLanguage()->get('default_command', array(
-            'smile' => "\xF0\x9F\x98\x8A"
-        ));
-
         try {
+            $response = $this->getLanguage()->get('default_command', array(
+                'smile' => "\xF0\x9F\x98\x8A"
+            ));
+
             $this->sendMessage($response);
             $this->getDatabase()->setBotState($this->getChatId(), 'default');
         } catch (\Exception $e) {

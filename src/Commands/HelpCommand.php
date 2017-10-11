@@ -10,9 +10,8 @@ class HelpCommand extends BaseCommand
             throw new \Exception('Telegram API message is not defined!');
         }
 
-        $response = $this->getLanguage()->get('help_command');
-
         try {
+            $response = $this->getLanguage()->get('help_command');
             $this->sendMessage($response);
             $this->getDatabase()->setBotState($this->getChatId(), 'default');
         } catch (\Exception $e) {

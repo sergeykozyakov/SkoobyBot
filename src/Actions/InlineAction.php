@@ -2,6 +2,7 @@
 namespace SkoobyBot\Actions;
 
 use SkoobyBot\Actions\BaseAction;
+use SkoobyBot\Languages\Language;
 
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
@@ -55,24 +56,29 @@ class InlineAction extends BaseAction
             ]]
         ]);
 
+        $language = Language::getInstance();
         $callbackText = null;
 
-        switch ($callbackCode) {
-            case '+like':
-                $callbackText = 'Вам это понравилось';
-                break;
-            case '-like':
-                $callbackText = 'Вы забрали свой лайк';
-                break;
-            case '+dislike':
-                $callbackText = 'Вам это не понравилось';
-                break;
-            case '-dislike':
-                $callbackText = 'Вы забрали свой дизлайк';
-                break;
-            default:
-                $callbackText = 'Произошла ошибка!';
-                break;
+        try {
+            switch ($callbackCode) {
+                case '+like':
+                    $callbackText = $language->get('callback_plus_like');
+                    break;
+                case '-like':
+                    $callbackText = $language->get('callback_minus_like');
+                    break;
+                case '+dislike':
+                    $callbackText = $language->get('callback_plus_dislike');
+                    break;
+                case '-dislike':
+                    $callbackText = $language->get('callback_minus_dislike');
+                    break;
+                default:
+                    $callbackText = $language->get('callback_error');
+                    break;
+            }
+        } catch (\Exception $e) {
+            throw $e;
         }
 
         try {

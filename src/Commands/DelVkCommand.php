@@ -11,16 +11,16 @@ class DelVkCommand extends BaseCommand
             throw new \Exception('Telegram API message is not defined!');
         }
 
-        $response = $this->getLanguage()->get('del_vk_command');
-        $responseMain = $this->getLanguage()->get('del_vk_command_main', array(
-            'smile' => "\xF0\x9F\x98\x89"
-        ));
-
-        $responseNoConnect = $this->getLanguage()->get('del_vk_command_no_connect', array(
-            'smile' => "\xF0\x9F\x98\x89"
-        ));
-
         try {
+            $response = $this->getLanguage()->get('del_vk_command');
+            $responseMain = $this->getLanguage()->get('del_vk_command_main', array(
+                'smile' => "\xF0\x9F\x98\x89"
+            ));
+    
+            $responseNoConnect = $this->getLanguage()->get('del_vk_command_no_connect', array(
+                'smile' => "\xF0\x9F\x98\x89"
+            ));
+
             $state = $this->getBotState();
             $text = $this->getMessage()->getText();
 
@@ -28,7 +28,7 @@ class DelVkCommand extends BaseCommand
             $isConnected = isset($user['vk_wall']) && $user['vk_wall'] && isset($user['channel']) && $user['channel'];
 
             if (!$isConnected) {
-                $keyboard = Listener::getDefaultKeyboard();
+                $keyboard = Listener::getDefaultKeyboard(false, $this->getLanguage());
                 array_splice($keyboard, -1);
 
                 $this->setReplyMarkup(

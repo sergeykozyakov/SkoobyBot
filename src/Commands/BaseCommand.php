@@ -32,10 +32,10 @@ abstract class BaseCommand
         }
 
         $this->api = $api;
+        $this->language = Language::getInstance();
 
         try {
             $this->database = Database::getInstance();
-            $this->language = Language::getInstance();
         } catch (\Exception $e) {
             throw $e;
         }
