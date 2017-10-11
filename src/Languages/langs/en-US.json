@@ -1,0 +1,3 @@
+{
+  "help_command": "I am able to import your wall or group VK posts into your Telegram channel. All you need is a public VK wall and a Telegram channel with the username specified. It is also required to make me the channel admin so that I can fill it with new posts every 10 minutes.\n\nYou can either change the wall and channel address anytime or even remove this connection. Type now /setVk for adding/editing the wall name, /getVk for checking connection and /delVk for stopping import. More questions? Ask @sergeykozyakov."
+}
