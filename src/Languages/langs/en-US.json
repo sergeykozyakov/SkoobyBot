@@ -1,3 +1,9 @@
 {
-  "help_command": "I am able to import your wall or group VK posts into your Telegram channel. All you need is a public VK wall and a Telegram channel with the username specified. It is also required to make me the channel admin so that I can fill it with new posts every 10 minutes.\n\nYou can either change the wall and channel address anytime or even remove this connection. Type now /setVk for adding/editing the wall name, /getVk for checking connection and /delVk for stopping import. More questions? Ask @sergeykozyakov."
+  "start_command": "Hello, {name}! I am Skooby Bot. How are you doing?",
+  "del_vk_command": "Are  you sure you want to stop VK posts import? If yes, type something.",
+  "del_vk_command_main": "VK posts import has been stopped. Hope you will change your mind soon {smile}",
+  "del_vk_command_no_connect": "You have not got installed VK posts import! So it is nothing to remove {smile}",
+  "help_command": "I am able to import your wall or group VK posts into your Telegram channel. All you need is a public VK wall and a Telegram channel with the username specified. It is also required to make me the channel admin so that I can fill it with new posts every 10 minutes.\n\nYou can either change the wall and channel address anytime or even remove this connection. Type now /setVk for adding/editing the wall name, /getVk for checking connection and /delVk for stopping import. More questions? Ask @sergeykozyakov.",
+  "cancel_command": "Action was cancelled. You can now type any command.",
+  "default_command": "Thanks for talking to me {smile}! If you need help — type /help."
 }

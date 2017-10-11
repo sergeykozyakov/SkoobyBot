@@ -2,6 +2,7 @@
 namespace SkoobyBot\Commands;
 
 use SkoobyBot\Database;
+use SkoobyBot\Languages\Language;
 
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
@@ -10,6 +11,7 @@ abstract class BaseCommand
     private $logger = null;
     private $api = null;
     private $database = null;
+    private $language = null;
 
     private $isCron = false;
 
@@ -33,6 +35,7 @@ abstract class BaseCommand
 
         try {
             $this->database = Database::getInstance();
+            $this->language = Language::getInstance();
         } catch (\Exception $e) {
             throw $e;
         }
@@ -50,6 +53,10 @@ abstract class BaseCommand
 
     public function getDatabase() {
         return $this->database;
+    }
+
+    public function getLanguage() {
+        return $this->language;
     }
 
     public function getIsCron() {

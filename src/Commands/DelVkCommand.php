@@ -11,9 +11,14 @@ class DelVkCommand extends BaseCommand
             throw new \Exception('Telegram API message is not defined!');
         }
 
-        $response = 'Ты действительно хочешь отключить импорт постов из VK? Если да, то пришли что-нибудь.';
-        $responseMain = "Импорт постов из VK отключен. Надеюсь, потом ты передумаешь \xF0\x9F\x98\x89";
-        $responseNoConnect = "У тебя ещё не настроен импорт из VK! Поэтому отключать нечего \xF0\x9F\x98\x89";
+        $response = $this->getLanguage()->get('del_vk_command');
+        $responseMain = $this->getLanguage()->get('del_vk_command_main', array(
+            'smile' => "\xF0\x9F\x98\x89"
+        ));
+
+        $responseNoConnect = $this->getLanguage()->get('del_vk_command_no_connect', array(
+            'smile' => "\xF0\x9F\x98\x89"
+        ));
 
         try {
             $state = $this->getBotState();

@@ -3,7 +3,9 @@ namespace SkoobyBot\Actions;
 
 use SkoobyBot\Actions\BaseAction;
 use SkoobyBot\Actions\InlineAction;
+
 use SkoobyBot\Commands\CommandFactory;
+use SkoobyBot\Languages\Language;
 
 class Listener extends BaseAction
 {
@@ -32,6 +34,17 @@ class Listener extends BaseAction
 
         $text = $result->getMessage()->getText();
         $chatId = $result->getMessage()->getChat()->getId();
+        $languageCode = $result->getMessage()->getFrom()->getLanguageCode();
+
+        try {
+            $lang = Language::getInstance();
+            $lang
+                ->setLanguage($languageCode)
+                ->init();
+        } catch (\Exception $e) {
+            $this->getLogger()->error('(chat_id: ' . $chatId . ') ' . $e->getMessage());
+            throw new \Exception('[ERROR] ' . $e->getMessage());
+        }
 
         $botState = '';
         $isConnected = false;
