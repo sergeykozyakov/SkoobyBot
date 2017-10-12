@@ -42,6 +42,10 @@ class Language
             $this->language = 'ru-RU';
         }
 
+        if ($this->language == self::DEFAULT_LANG) {
+            $isDefault = true;
+        }
+
         $file = __DIR__ . '/langs/' . $this->language . '.json';
 
         if (!file_exists($file)) {
