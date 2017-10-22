@@ -32,9 +32,9 @@ class GetVkCommand extends BaseCommand
         if (!$vkAppId || !$vkSecret || !$vkToken) {
             if (!$this->getIsCron()) {
                 $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No VK API tokens were specified!');
-                $response = 'Нет ключей доступа для подключения к серверу VK! Извини, это поломка на моей стороне.';
 
                 try {
+                    $response = $this->getLanguage()->get('get_vk_command_no_tokens');
                     $this->sendMessage($response);
                 } catch (\Exception $e) {
                     throw $e;
@@ -82,9 +82,9 @@ class GetVkCommand extends BaseCommand
                 $this->getLogger()->warning(
                     '(chat_id: ' . $this->getChatId() . ') No user VK import information was specified!'
                 );
-                $response = 'У тебя ещё не настроен импорт из VK!';
 
                 try {
+                    $response = $this->getLanguage()->get('get_vk_command_no_import_set');
                     $this->sendMessage($response);
                 } catch (\Exception $e) {
                     throw $e;
@@ -94,9 +94,12 @@ class GetVkCommand extends BaseCommand
         }
         else {
             if (!$this->getIsCron()) {
-                $response = "Настроен следующий импорт\n\nVK: " . $row['vk_wall'] . "\nTelegram: " . $row['channel'];
-
                 try {
+                    $response = $this->getLanguage()->get('get_vk_command_import_set', array(
+                        'vk_wall' => $row['vk_wall'],
+                        'channel' => $row['channel']
+                    ));
+
                     $this->sendMessage($response);
                 } catch (\Exception $e) {
                     throw $e;
@@ -135,9 +138,9 @@ class GetVkCommand extends BaseCommand
             } catch (VKException $e) {
                 if (!$this->getIsCron()) {
                     $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') VK API connection error! ' . $e->getMessage());
-                    $response = 'Не могу подключиться к серверу VK! Попробуй позже.';
 
                     try {
+                        $response = $this->getLanguage()->get('get_vk_command_server_error');
                         $this->sendMessage($response);
                     } catch (\Exception $e) {
                         throw $e;
@@ -154,11 +157,9 @@ class GetVkCommand extends BaseCommand
                     $this->getLogger()->warning(
                         '(chat_id: ' . $this->getChatId() . ', vk_wall: ' . $vkWall . ') Cannot read received VK API response!'
                     );
-
-                    $response = 'Не могу получить пост из VK! Такое бывает, если у пользователя закрыта стена ' .
-                        'или удалена страница. Попробуй потом ещё раз.';
                     
                     try {
+                        $response = $this->getLanguage()->get('get_vk_command_wall_error');
                         $this->sendMessage($response);
                     } catch (\Exception $e) {
                         throw $e;
@@ -233,9 +234,9 @@ class GetVkCommand extends BaseCommand
 
         if (!$this->getIsCron() && count($postList) == 0) {
             $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') No user VK posts were found!');
-            $response = 'Пока нет ни одного поста.';
 
             try {
+                $response = $this->getLanguage()->get('get_vk_command_wall_empty');
                 $this->sendMessage($response);
             } catch (\Exception $e) {
                 throw $e;

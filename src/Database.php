@@ -33,7 +33,21 @@ class Database
             channel VARCHAR(1024),
             KEY chat_id (chat_id),
             KEY connected (vk_wall, vk_last_unixtime, channel)
-        )';
+        );
+        CREATE TABLE IF NOT EXISTS posts (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            channel VARCHAR(1024),
+            message_id BIGINT UNSIGNED,
+            KEY post (channel, message_id)
+        );
+        CREATE TABLE IF NOT EXISTS likes (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            post_id BIGINT UNSIGNED,
+            t_user_id BIGINT UNSIGNED,
+            is_liked TINYINT UNSIGNED,
+            is_disliked TINYINT UNSIGNED,
+            KEY t_user_id (t_user_id)
+        );';
 
         try {
             $stmt = $this->db->prepare($sql);
@@ -47,6 +61,8 @@ class Database
         if (!$chatId) {
             throw new \Exception('chat_id is not defined!');
         }
+
+        $getUser = null;
 
         try {
             $getUser = $this->getUser($chatId);
@@ -69,6 +85,83 @@ class Database
         }
     }
 
+    public function addPost($channel, $messageId) {
+        if (!$channel) {
+            throw new \Exception('channel is not defined!');
+        }
+
+        if (!$messageId) {
+            throw new \Exception('message_id is not defined!');
+        }
+
+        $sql = 'INSERT INTO posts (id, channel, message_id) VALUES (NULL, ?, ?)';
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(array($channel, $messageId));
+        } catch (\Exception $e) {
+            throw new \Exception('Cannot add post to database! (' . $e->getMessage() . ')');
+        }
+    }
+
+    public function setLike($channel, $messageId, $tUserId, $isLike = true, $isDislike = false) {
+        if (!$channel) {
+            throw new \Exception('channel is not defined!');
+        }
+
+        if (!$messageId) {
+            throw new \Exception('message_id is not defined!');
+        }
+
+        if (!$tUserId) {
+            throw new \Exception('t_user_id is not defined!');
+        }
+
+        $getLike = null;
+        $retCode = null;
+
+        try {
+            $getLike = $this->getLike($channel, $messageId, $tUserId);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        if (empty($getLike)) {
+            $sql = 'INSERT INTO likes (id, post_id, t_user_id, is_liked, is_disliked) VALUES ' .
+                '(NULL, (SELECT id FROM posts WHERE channel = ? AND message_id = ?), ?, ?, ?)';
+
+            try {
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute(array($channel, $messageId, $tUserId, $isLike ? 1 : 0, $isDislike ? 1 : 0));
+
+                $retCode = $isLike ? '+like' : ($isDislike ? '+dislike' : null);
+            } catch (\Exception $e) {
+                throw new \Exception('Cannot add like to database! (' . $e->getMessage() . ')');
+            }
+        }
+        else {
+            $likeId = $getLike['like_id'];
+
+            $sql = 'UPDATE likes SET is_liked = IF(is_liked = 1, 0, ?), ' .
+                'is_disliked = IF(is_disliked = 1, 0, ?) WHERE id = ?';
+
+            try {
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute(array($isLike ? 1 : 0, $isDislike ? 1 : 0, $likeId));
+
+                $retCode = $isLike
+                    ? $getLike['is_liked'] == 1 ? '-like' : '+like'
+                    : ($isDislike
+                        ? $getLike['is_disliked'] == 1 ? '-dislike' : '+dislike'
+                        : null);
+            } catch (\Exception $e) {
+                throw new \Exception('Cannot add like to database! (' . $e->getMessage() . ')');
+            }
+        }
+
+        return $retCode;
+    }
+
     public function getUser($chatId) {
         if (!$chatId) {
             throw new \Exception('chat_id is not defined!');
@@ -83,6 +176,63 @@ class Database
             $result = $stmt->fetch();
         } catch (\Exception $e) {
             throw new \Exception('Cannot get user from database! (' . $e->getMessage() . ')');
+        }
+
+        return $result;
+    }
+
+    public function getLike($channel, $messageId, $tUserId) {
+        if (!$channel) {
+            throw new \Exception('channel is not defined!');
+        }
+
+        if (!$messageId) {
+            throw new \Exception('message_id is not defined!');
+        }
+
+        if (!$tUserId) {
+            throw new \Exception('t_user_id is not defined!');
+        }
+
+        $sql = 'SELECT likes.id AS like_id, is_liked, is_disliked FROM likes ' .
+            'LEFT JOIN posts ON posts.id = likes.post_id ' .
+            'WHERE posts.channel = ? AND posts.message_id = ? AND likes.t_user_id = ?';
+
+        $result = null;
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(array($channel, $messageId, $tUserId));
+            $result = $stmt->fetch();
+        } catch (\Exception $e) {
+            throw new \Exception('Cannot get like from database! (' . $e->getMessage() . ')');
+        }
+
+        return $result;
+    }
+
+    public function getLikesCount($channel, $messageId) {
+        if (!$channel) {
+            throw new \Exception('channel is not defined!');
+        }
+
+        if (!$messageId) {
+            throw new \Exception('message_id is not defined!');
+        }
+
+        $sql = 'SELECT IF(SUM(is_liked) IS NOT NULL, SUM(is_liked), 0) AS sum_likes, ' .
+            'IF(SUM(is_disliked) IS NOT NULL, SUM(is_disliked), 0) AS sum_dislikes FROM likes ' .
+            'LEFT JOIN posts ON posts.id = likes.post_id ' .
+            'WHERE posts.channel = ? AND posts.message_id = ?';
+
+        $result = null;
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(array($channel, $messageId));
+            $result = $stmt->fetch();
+        } catch (\Exception $e) {
+            throw new \Exception('Cannot get likes count from database! (' . $e->getMessage() . ')');
         }
 
         return $result;

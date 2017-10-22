@@ -3,8 +3,8 @@ namespace SkoobyBot\Actions;
 
 use SkoobyBot\Config;
 use SkoobyBot\Database;
+use SkoobyBot\TelegramApi;
 
-use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
 abstract class BaseAction
@@ -27,7 +27,7 @@ abstract class BaseAction
         }
 
         try {
-            $api = new Api($token);
+            $api = new TelegramApi($token);
             $this->api = $api;
         } catch (TelegramSDKException $e) {
             $this->logger->error('Telegram API connection error! ' . $e->getMessage());

@@ -2,6 +2,7 @@
 namespace SkoobyBot\Commands;
 
 use SkoobyBot\Database;
+use SkoobyBot\Languages\Language;
 
 use Telegram\Bot\Exceptions\TelegramSDKException;
 
@@ -10,6 +11,7 @@ abstract class BaseCommand
     private $logger = null;
     private $api = null;
     private $database = null;
+    private $language = null;
 
     private $isCron = false;
 
@@ -30,6 +32,7 @@ abstract class BaseCommand
         }
 
         $this->api = $api;
+        $this->language = Language::getInstance();
 
         try {
             $this->database = Database::getInstance();
@@ -50,6 +53,10 @@ abstract class BaseCommand
 
     public function getDatabase() {
         return $this->database;
+    }
+
+    public function getLanguage() {
+        return $this->language;
     }
 
     public function getIsCron() {
@@ -114,8 +121,10 @@ abstract class BaseCommand
             throw new \Exception('Telegram API chat_id is not defined!');
         }
 
+        $message = null;
+
         try {
-            $this->api->sendMessage([
+            $message = $this->api->sendMessage([
                 'chat_id' => $this->chatId,
                 'text' => $text,
                 'reply_markup' => $this->replyMarkup,
@@ -125,6 +134,14 @@ abstract class BaseCommand
         } catch (TelegramSDKException $e) {
             throw new \Exception('Cannot send message via Telegram API! (' . $e->getMessage() . ')');
         }
+
+        if (!$this->isCron) return;
+
+        try {
+            $this->database->addPost($this->chatId, $message->getMessageId());
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     protected function sendPhoto($photo, $caption = null) {
@@ -132,14 +149,25 @@ abstract class BaseCommand
             throw new \Exception('Telegram API chat_id is not defined!');
         }
 
+        $message = null;
+
         try {
-            $this->api->sendPhoto([
+            $message = $this->api->sendPhoto([
                 'chat_id' => $this->chatId,
                 'photo' => $photo,
-                'caption' => $caption
+                'caption' => $caption,
+                'reply_markup' => $this->replyMarkup
             ]);
         } catch (TelegramSDKException $e) {
             throw new \Exception('Cannot send photo via Telegram API! (' . $e->getMessage() . ')');
+        }
+
+        if (!$this->isCron) return;
+
+        try {
+            $this->database->addPost($this->chatId, $message->getMessageId());
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 }

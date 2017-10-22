@@ -10,9 +10,8 @@ class CancelCommand extends BaseCommand
             throw new \Exception('Telegram API message is not defined!');
         }
 
-        $response = 'Действие отменено. Ты можешь вызвать любую команду.';
-
         try {
+            $response = $this->getLanguage()->get('cancel_command');
             $this->sendMessage($response);
             $this->getDatabase()->setBotState($this->getChatId(), 'default');
         } catch (\Exception $e) {
