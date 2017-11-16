@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "php":">=5.5.0",
+        "php": ">=5.5.0",
         "irazasyed/telegram-bot-sdk": "2.2.0",
         "katzgrau/klogger": "dev-master",
         "vladkens/vk": "0.1.9"

@@ -191,7 +191,7 @@ class GetVkCommand extends BaseCommand
                     foreach ($post['attachments'] as $attachment) {
                         switch ($attachment['type']) {
                             case 'photo':
-                                $attachmentText = $attachment['photo']['text'];
+                                $attachmentText = preg_replace('/\[(.+?(?=\|))\|(.+?(?=\]))\]/', '\2', $attachment['photo']['text']);
                                 $attachmentUrl = '';
 
                                 foreach (self::$photoSizes as $photoSize) {
@@ -246,6 +246,11 @@ class GetVkCommand extends BaseCommand
 
         foreach (array_reverse($postList) as $item) {
             try {
+                if ($item['text'] && strlen($item['text']) <= 200 && count($item['photos']) == 1 && !$item['photos'][0]['text']) {
+                    $item['photos'][0]['text'] = $item['text'];
+                    $item['text'] = '';
+                }
+
                 if ($item['text']) {
                     $this->sendMessage($item['text'], null, true);
                 }
