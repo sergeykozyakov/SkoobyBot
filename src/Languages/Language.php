@@ -57,7 +57,7 @@ class Language
             $isDefault = true;
         }
 
-        $dataDefault = array();
+        $dataDefault = [];
 
         if (!$isDefault) {
             if (!file_exists(self::DEFAULT_LANG_FILE)) {
@@ -82,7 +82,7 @@ class Language
         $this->data = array_merge($dataDefault, $dataCustom);
     }
 
-    public function get($name, $params = array()) {
+    public function get($name, $params = []) {
         if (!$this->language) {
             throw new \Exception('Language is not defined!');
         }

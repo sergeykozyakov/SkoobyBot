@@ -13,9 +13,9 @@ class StartCommand extends BaseCommand
         $firstName = $this->getMessage()->getChat()->getFirstName();
 
         try {
-            $response = $this->getLanguage()->get('start_command', array(
+            $response = $this->getLanguage()->get('start_command', [
                 'name' => $firstName
-            ));
+            ]);
 
             $this->sendMessage($response);
 

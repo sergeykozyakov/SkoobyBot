@@ -107,7 +107,7 @@ class Listener extends BaseAction
     }
 
     public static function getDefaultKeyboard($isConnected, $language) {
-        $keyboard = array();
+        $keyboard = [];
 
         $addVk = 'add VK';
         $editVk = 'edit VK';
@@ -168,69 +168,69 @@ class Listener extends BaseAction
         $vkKeyboard = $defaultKeyboard;
         array_splice($vkKeyboard, 0, -1);
 
-        $defaultState = array(
-            '/start' => array(
+        $defaultState = [
+            '/start' => [
                 'class' => 'StartCommand', 'markup' => $this->getMarkup($keyboard)
-            ),
-            '/setVk' => array(
+            ],
+            '/setVk' => [
                 'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
-            ),
-            $keys[0][0] => array(
+            ],
+            $keys[0][0] => [
                 'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
-            ),
-            $connKeys[0][0] => array(
+            ],
+            $connKeys[0][0] => [
                 'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
-            ),
-            '/getVk' => array(
+            ],
+            '/getVk' => [
                 'class' => 'GetVkCommand', 'markup' => $this->getMarkup($keyboard)
-            ),
-            $connKeys[1][0] => array(
+            ],
+            $connKeys[1][0] => [
                 'class' => 'GetVkCommand', 'markup' => $this->getMarkup($keyboard)
-            ),
-            '/delVk' => array(
+            ],
+            '/delVk' => [
                 'class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
-            ),
-            $connKeys[2][0] => array(
+            ],
+            $connKeys[2][0] => [
                 'class' => 'DelVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
-            ),
-            '/cancel' => array(
+            ],
+            '/cancel' => [
                 'class' => 'CancelCommand', 'markup' => $this->getMarkup($keyboard)
-            ),
-            $keys[2][0] => array(
+            ],
+            $keys[2][0] => [
                 'class' => 'CancelCommand', 'markup' => $this->getMarkup($keyboard)
-            ),
-            '/help' => array(
+            ],
+            '/help' => [
                 'class' => 'HelpCommand', 'markup' => $this->getMarkup($keyboard)
-            ),
-            $keys[1][0] => array(
+            ],
+            $keys[1][0] => [
                 'class' => 'HelpCommand', 'markup' => $this->getMarkup($keyboard)
-            ),
-            '/default' => array(
+            ],
+            '/default' => [
                 'class' => 'DefaultCommand', 'markup' => $this->getMarkup($keyboard)
-            )
-        );
+            ]
+        ];
 
         $setVkMainState = $defaultState;
-        $setVkMainState['/default'] = array(
+        $setVkMainState['/default'] = [
             'class' => 'SetVkCommand', 'markup' => $this->getMarkup($vkKeyboard)
-        );
+        ];
 
         $setVkTelegramState = $setVkMainState;
-        $setVkTelegramState['/default'] = array(
+        $setVkTelegramState['/default'] = [
             'class' => 'SetVkCommand', 'markup' => $this->getMarkup($isConnected ? $keyboard : $triggeredKeyboard)
-        );
+        ];
 
         $delVkMainState = $defaultState;
-        $delVkMainState['/default'] = array(
+        $delVkMainState['/default'] = [
             'class' => 'DelVkCommand', 'markup' => $this->getMarkup($triggeredKeyboard)
-        );
+        ];
 
-        $stateMap = array(
+        $stateMap = [
             'default' => $defaultState,
             'set_vk_main' => $setVkMainState,
             'set_vk_telegram' => $setVkTelegramState,
             'del_vk_main' => $delVkMainState
-        );
+        ];
 
         return $stateMap;
     }

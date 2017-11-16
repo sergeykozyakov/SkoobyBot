@@ -13,13 +13,13 @@ class DelVkCommand extends BaseCommand
 
         try {
             $response = $this->getLanguage()->get('del_vk_command');
-            $responseMain = $this->getLanguage()->get('del_vk_command_main', array(
+            $responseMain = $this->getLanguage()->get('del_vk_command_main', [
                 'smile' => "\xF0\x9F\x98\x89"
-            ));
+            ]);
     
-            $responseNoConnect = $this->getLanguage()->get('del_vk_command_no_connect', array(
+            $responseNoConnect = $this->getLanguage()->get('del_vk_command_no_connect', [
                 'smile' => "\xF0\x9F\x98\x89"
-            ));
+            ]);
 
             $state = $this->getBotState();
             $text = $this->getMessage()->getText();

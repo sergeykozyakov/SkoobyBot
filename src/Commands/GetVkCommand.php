@@ -10,7 +10,7 @@ use VK\VKException;
 class GetVkCommand extends BaseCommand
 {
     private static $limit = 20;
-    private static $photoSizes = array(1280, 807, 604, 130, 75);
+    private static $photoSizes = [1280, 807, 604, 130, 75];
 
     public function start() {
         if (!$this->getMessage() && !$this->getIsCron()) {
@@ -46,7 +46,7 @@ class GetVkCommand extends BaseCommand
             return;
         }
 
-        $rows = array();
+        $rows = [];
         if (!$this->getIsCron()) {
             try {
                 $user = $this->getDatabase()->getUser($this->getChatId());
@@ -95,10 +95,10 @@ class GetVkCommand extends BaseCommand
         else {
             if (!$this->getIsCron()) {
                 try {
-                    $response = $this->getLanguage()->get('get_vk_command_import_set', array(
+                    $response = $this->getLanguage()->get('get_vk_command_import_set', [
                         'vk_wall' => $row['vk_wall'],
                         'channel' => $row['channel']
-                    ));
+                    ]);
 
                     $this->sendMessage($response);
                 } catch (\Exception $e) {
@@ -117,7 +117,7 @@ class GetVkCommand extends BaseCommand
         }
 
         $offset = 1;
-        $postList = array();
+        $postList = [];
 
         $domain = !is_numeric($vkWall) ? $vkWall : null;
 
@@ -126,15 +126,15 @@ class GetVkCommand extends BaseCommand
 
             try {
                 $vk = new VK($vkAppId, $vkSecret, $vkToken);
-                $posts = $vk->api('wall.get', array(
+                $posts = $vk->api('wall.get', [
                     'owner_id' => !$domain ? $vkWall : null,
                     'domain' => $domain,
                     'count' => self::$limit,
                     'offset' => $offset,
                     'filter' => 'owner',
-                    'v' => '5.60',
+                    'v' => '5.69',
                     'lang' => 'ru'
-                ));
+                ]);
             } catch (VKException $e) {
                 if (!$this->getIsCron()) {
                     $this->getLogger()->warning('(chat_id: ' . $this->getChatId() . ') VK API connection error! ' . $e->getMessage());
@@ -184,8 +184,8 @@ class GetVkCommand extends BaseCommand
                 }
 
                 $needLink = false;
-                $postPhotos = array();
-                $postLinks = array();
+                $postPhotos = [];
+                $postLinks = [];
 
                 if (isset($post['attachments'])) {
                     foreach ($post['attachments'] as $attachment) {
@@ -201,11 +201,11 @@ class GetVkCommand extends BaseCommand
                                     }
                                 }
 
-                                $postPhotos[] = array('text' => $attachmentText, 'url' => $attachmentUrl);
+                                $postPhotos[] = ['text' => $attachmentText, 'url' => $attachmentUrl];
                                 break;
                             case 'link':
                                 $attachmentUrl = $attachment['link']['url'];
-                                $postLinks[] = array('url' => $attachmentUrl);
+                                $postLinks[] = ['url' => $attachmentUrl];
                                 break;
                             default:
                                 $needLink = true;
@@ -214,7 +214,7 @@ class GetVkCommand extends BaseCommand
                     }
                 }
 
-                $postList[] = array(
+                $postList[] = [
                     'id' => $postId,
                     'ownerId' => $ownerId,
                     'date' => $date,
@@ -222,7 +222,7 @@ class GetVkCommand extends BaseCommand
                     'photos' => $postPhotos,
                     'links' => $postLinks,
                     'needLink' => $needLink
-                );
+                ];
 
                 if (!$this->getIsCron()) {
                     break 2;

@@ -26,7 +26,7 @@ class App
         return $this->logger;
     }
 
-    public function start($params = array()) {
+    public function start($params = []) {
         $logDir = Config::getLogDir();
 
         try {

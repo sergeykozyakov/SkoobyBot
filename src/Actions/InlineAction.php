@@ -29,7 +29,7 @@ class InlineAction extends BaseAction
         }
 
         $callbackCode = null;
-        $likesCountList = array();
+        $likesCountList = [];
 
         try {
             $callbackCode = $this->getDatabase()->setLike(

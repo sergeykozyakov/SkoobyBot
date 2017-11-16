@@ -79,7 +79,7 @@ class Database
 
         try {
             $stmt = $this->db->prepare($sql);
-            $stmt->execute(array($chatId, 'default', '', time(), ''));
+            $stmt->execute([$chatId, 'default', '', time(), '']);
         } catch (\Exception $e) {
             throw new \Exception('Cannot add user to database! (' . $e->getMessage() . ')');
         }
@@ -98,7 +98,7 @@ class Database
 
         try {
             $stmt = $this->db->prepare($sql);
-            $stmt->execute(array($channel, $messageId));
+            $stmt->execute([$channel, $messageId]);
         } catch (\Exception $e) {
             throw new \Exception('Cannot add post to database! (' . $e->getMessage() . ')');
         }
@@ -132,7 +132,7 @@ class Database
 
             try {
                 $stmt = $this->db->prepare($sql);
-                $stmt->execute(array($channel, $messageId, $tUserId, $isLike ? 1 : 0, $isDislike ? 1 : 0));
+                $stmt->execute([$channel, $messageId, $tUserId, $isLike ? 1 : 0, $isDislike ? 1 : 0]);
 
                 $retCode = $isLike ? '+like' : ($isDislike ? '+dislike' : null);
             } catch (\Exception $e) {
@@ -147,7 +147,7 @@ class Database
 
             try {
                 $stmt = $this->db->prepare($sql);
-                $stmt->execute(array($isLike ? 1 : 0, $isDislike ? 1 : 0, $likeId));
+                $stmt->execute([$isLike ? 1 : 0, $isDislike ? 1 : 0, $likeId]);
 
                 $retCode = $isLike
                     ? $getLike['is_liked'] == 1 ? '-like' : '+like'
@@ -172,7 +172,7 @@ class Database
 
         try {
             $stmt = $this->db->prepare($sql);
-            $stmt->execute(array($chatId));
+            $stmt->execute([$chatId]);
             $result = $stmt->fetch();
         } catch (\Exception $e) {
             throw new \Exception('Cannot get user from database! (' . $e->getMessage() . ')');
@@ -202,7 +202,7 @@ class Database
 
         try {
             $stmt = $this->db->prepare($sql);
-            $stmt->execute(array($channel, $messageId, $tUserId));
+            $stmt->execute([$channel, $messageId, $tUserId]);
             $result = $stmt->fetch();
         } catch (\Exception $e) {
             throw new \Exception('Cannot get like from database! (' . $e->getMessage() . ')');
@@ -229,7 +229,7 @@ class Database
 
         try {
             $stmt = $this->db->prepare($sql);
-            $stmt->execute(array($channel, $messageId));
+            $stmt->execute([$channel, $messageId]);
             $result = $stmt->fetch();
         } catch (\Exception $e) {
             throw new \Exception('Cannot get likes count from database! (' . $e->getMessage() . ')');
@@ -269,7 +269,7 @@ class Database
 
         try {
             $stmt = $this->db->prepare($sql);
-            $stmt->execute(array($channel, $chatId));
+            $stmt->execute([$channel, $chatId]);
             $result = $stmt->fetch();
         } catch (\Exception $e) {
             throw new \Exception('Cannot get if channel is connected from database! (' . $e->getMessage() . ')');
@@ -283,7 +283,7 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
-        $arr = array('bot_state' => $state);
+        $arr = ['bot_state' => $state];
 
         try {
             $this->set($chatId, $arr);
@@ -297,10 +297,10 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
-        $arr = array(
+        $arr = [
             'vk_wall' => $wallId,
             'vk_last_unixtime' => time()
-        );
+        ];
 
         try {
             $this->set($chatId, $arr);
@@ -314,7 +314,7 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
-        $arr = array('vk_last_unixtime' => $vkLastUnixTime);
+        $arr = ['vk_last_unixtime' => $vkLastUnixTime];
 
         try {
             $this->set($chatId, $arr);
@@ -328,10 +328,10 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
-        $arr = array(
+        $arr = [
             'channel' => $channel,
             'vk_last_unixtime' => time()
-        );
+        ];
 
         try {
             $this->set($chatId, $arr);
@@ -345,11 +345,11 @@ class Database
             throw new \Exception('chat_id is not defined!');
         }
 
-        $arr = array(
+        $arr = [
             'vk_wall' => '',
             'vk_last_unixtime' => time(),
             'channel' => ''
-        );
+        ];
 
         try {
             $this->set($chatId, $arr);
@@ -368,8 +368,8 @@ class Database
         }
 
         $sql = 'UPDATE users SET ';
-        $namesList = array();
-        $valuesList = array();
+        $namesList = [];
+        $valuesList = [];
 
         foreach($params as $field => $param) {
             if (!preg_match('/^[a-zA-Z0-9$_]+$/', $field)) {
