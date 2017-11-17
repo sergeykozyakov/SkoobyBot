@@ -1,7 +1,7 @@
 {
     "name": "sergeykozyakov/SkoobyBot",
     "description": "Telegram bot for VK posts import into Telegram channel",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "type": "project",
     "keywords": ["skooby", "skooby bot", "skoobybot"],
     "homepage": "https://github.com/sergeykozyakov",
@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "php":">=5.5.0",
+        "php": ">=5.5.0",
         "irazasyed/telegram-bot-sdk": "2.2.0",
         "katzgrau/klogger": "dev-master",
         "vladkens/vk": "0.1.9"

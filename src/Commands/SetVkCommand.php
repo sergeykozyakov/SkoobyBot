@@ -14,9 +14,9 @@ class SetVkCommand extends BaseCommand
         $firstName = $this->getMessage()->getChat()->getFirstName();
 
         try {
-            $response = $this->getLanguage()->get('set_vk_command', array(
+            $response = $this->getLanguage()->get('set_vk_command', [
                 'name' => $firstName
-            ));
+            ]);
 
             $responseConnected = $this->getLanguage()->get('set_vk_command_connected');
             $responseMain = $this->getLanguage()->get('set_vk_command_main');
@@ -24,9 +24,9 @@ class SetVkCommand extends BaseCommand
             $responseTelegram = $this->getLanguage()->get('set_vk_command_telegram');
             $responseTelegramVerify = $this->getLanguage()->get('set_vk_command_telegram_verify');
 
-            $responseFailed = $this->getLanguage()->get('set_vk_command_failed', array(
+            $responseFailed = $this->getLanguage()->get('set_vk_command_failed', [
                 'smile' => "\xF0\x9F\x98\xB5"
-            ));
+            ]);
             $responseTelegramFailed = $this->getLanguage()->get('set_vk_command_telegram_failed');
             $responseTelegramVerifyFailed = $this->getLanguage()->get('set_vk_command_telegram_verify_failed');
 
