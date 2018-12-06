@@ -93,6 +93,10 @@ class Listener extends BaseAction
         }
 
         try {
+            if ($action != '/default') {
+                $this->getDatabase()->setBotState($chatId, 'default');
+            }
+
             $command = CommandFactory::get($commandParams['class'], $this->getApi(), $this->getLogger());
             $command
                 ->setMessage($result->getMessage())
